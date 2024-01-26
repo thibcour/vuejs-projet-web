@@ -1,4 +1,4 @@
-# projet-web Tooboo
+# projet-web Toobo
 
 ## Project setup
 ```
