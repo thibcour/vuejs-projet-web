@@ -1,26 +1,20 @@
 <template>
-  <BootstrapTemplate/>
+    <div id="app">
+        <router-view name="header"></router-view>
+        <main>
+            <fade-transition origin="center" mode="out-in" :duration="250">
+                <router-view/>
+            </fade-transition>
+        </main>
+        <router-view name="footer"></router-view>
+    </div>
 </template>
-
 <script>
-import BootstrapTemplate from './components/BootstrapTemplate.vue'
+import { FadeTransition } from "vue2-transitions";
 
 export default {
   components: {
-    BootstrapTemplate
-  },
-  data(){
-    return {
-      pageTitre: 'Accueil',
-    }
-  },
-  mounted() {
-    document.title = this.pageTitre;
-  },
+    FadeTransition
+  }
 };
-
 </script>
-
-<style>
-/* Ajoutez ici tout style global dont vous avez besoin */
-</style>
