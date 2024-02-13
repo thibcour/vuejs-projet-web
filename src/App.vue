@@ -1,13 +1,16 @@
 <template>
-  <BootstrapTemplate/>
+  <AppNavbar/>
+  <AppMaps/>
 </template>
 
 <script>
-import BootstrapTemplate from './components/BootstrapTemplate.vue'
+import AppNavbar from './components/AppNavbar.vue'
+import AppMaps from "@/components/AppMaps.vue";
 
 export default {
   components: {
-    BootstrapTemplate
+    AppNavbar,
+    AppMaps
   },
   data(){
     return {
