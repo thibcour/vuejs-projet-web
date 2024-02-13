@@ -34,27 +34,41 @@ export default {
 // Ajouter le contrôle de géolocalisation
     const geolocateControl = new mapboxgl.GeolocateControl({
       positionOptions: {
-        enableHighAccuracy: true
+        enableHighAccuracy: true // Activer la haute précision
       },
-      trackUserLocation: true,
-      showUserLocation: true // Assurez-vous que cette propriété est définie sur true
+      trackUserLocation: true, // Centrer la carte sur l'emplacement de l'utilisateur
+      showUserLocation: true // Afficher l'emplacement de l'utilisateur
     });
 
-// Ajouter le contrôle de géolocalisation à la carte
-    this.map.addControl(geolocateControl, 'top-right');
+    // Ajouter le contrôle à la carte
+    this.map.addControl(geolocateControl);
 
-// Ajouter le géocodeur
-    const geocoder = new MapboxGeocoder({
-      accessToken: mapboxgl.accessToken,
-      mapboxgl: mapboxgl,
-      placeholder: 'Entrez une adresse', // Texte de préremplissage
-    });
+    if (window.innerWidth <= 600) {
+      // Ajouter le géocodeur
+      const geocoder = new MapboxGeocoder({
+        accessToken: mapboxgl.accessToken,
+        mapboxgl: mapboxgl,
+        placeholder: 'Entrez une adresse', // Texte de préremplissage
+      });
 
-// Obtenir le conteneur DOM du géocodeur
-    const geocoderContainer = geocoder.onAdd(this.map);
+      // Obtenir le conteneur DOM du géocodeur
+      const geocoderContainer = geocoder.onAdd(this.map);
 
-// Ajouter le conteneur à un autre élément
-    this.$refs.geocoderContainer.appendChild(geocoderContainer);
+      // Ajouter le conteneur à un autre élément
+      this.$refs.geocoderContainer.appendChild(geocoderContainer);
+    }
+    else {
+      // Ajouter le géocodeur
+      const geocoder = new MapboxGeocoder({
+        accessToken: mapboxgl.accessToken,
+        mapboxgl: mapboxgl,
+        placeholder: 'Entrez une adresse', // Texte de préremplissage
+      });
+
+      // Ajouter le géocodeur à la carte
+      this.map.addControl(geocoder, 'top-left');
+    }
+
   }
 };
 </script>
@@ -79,9 +93,11 @@ export default {
 
 @media (max-width: 600px) {
   .map {
-    height: 400px;
+      position: relative;
+    height: 500px;
     width: auto;
   }
 }
+
 
 </style>
