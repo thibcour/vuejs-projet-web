@@ -1,18 +1,20 @@
 <template>
-  <AppNavbar/>
-  <AppMaps/>
+  <div>
+    <AppNavbar/>
+    <AppMaps />
+  </div>
 </template>
 
 <script>
 import AppNavbar from './components/AppNavbar.vue'
-import AppMaps from "@/components/AppMaps.vue";
+import AppMaps from './components/AppMaps.vue'
 
 export default {
   components: {
     AppNavbar,
-    AppMaps
+    AppMaps,
   },
-  data(){
+  data() {
     return {
       pageTitre: 'Accueil',
     }
@@ -21,7 +23,6 @@ export default {
     document.title = this.pageTitre;
   },
 };
-
 </script>
 
 <style>

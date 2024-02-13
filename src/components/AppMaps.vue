@@ -1,70 +1,87 @@
-<script setup>
-
-</script>
-
 <template>
-  <div style="display: flex; justify-content: center;">
-    <div class="map-container" v-if="geolocationFinished">
-      <l-map ref="map" v-model:zoom="zoom" :center="center">
-        <l-tile-layer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            layer-type="base"
-            name="OpenStreetMap"
-        ></l-tile-layer>
-      </l-map>
+  <div class="map-container">
+    <div ref="geocoderContainer" class="geocoder-container flex-center"></div>
+    <div ref="map" class="map"></div>
+    <div ref="geolocateContainer" class="geolocate-container">
+      <div class="geolocate-control custom-geolocate-button"></div>
     </div>
   </div>
 </template>
 
-
 <script>
-import "leaflet/dist/leaflet.css";
-import { LMap, LTileLayer } from "@vue-leaflet/vue-leaflet";
+import mapboxgl from 'mapbox-gl';
+import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
+import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
 
 export default {
-  components: {
-    LMap,
-    LTileLayer,
-  },
   data() {
     return {
-      zoom: 2,
-      center: [47.41322, -1.219482], // Valeur par défaut
-      geolocationFinished: false, // Ajoutez cette ligne
+      searchQuery: '',
+      mapboxAccessToken: process.env.VUE_APP_MAPBOX_ACCESS_TOKEN
     };
   },
   mounted() {
-    this.getUserLocation();
-  },
-  methods: {
-    getUserLocation() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition((position) => {
-          this.center = [position.coords.latitude, position.coords.longitude];
-          this.zoom = 14;
-          this.geolocationFinished = true; // Ajoutez cette ligne
-        });
-      } else {
-        console.log("La géolocalisation n'est pas supportée par votre navigateur.");
-        this.geolocationFinished = true; // Ajoutez cette ligne
-      }
-    },
-  },
+    mapboxgl.accessToken = this.mapboxAccessToken;
+
+    // Créer la carte
+    this.map = new mapboxgl.Map({
+      container: this.$refs.map,
+      style: 'mapbox://styles/mapbox/streets-v11',
+      center: [2.3522, 48.8566], // Paris par défaut
+      zoom: 11,
+      attributionControl: false // Supprimer l'attribution
+    });
+// Ajouter le contrôle de géolocalisation
+    const geolocateControl = new mapboxgl.GeolocateControl({
+      positionOptions: {
+        enableHighAccuracy: true
+      },
+      trackUserLocation: true,
+      showUserLocation: true // Assurez-vous que cette propriété est définie sur true
+    });
+
+// Ajouter le contrôle de géolocalisation à la carte
+    this.map.addControl(geolocateControl, 'top-right');
+
+// Ajouter le géocodeur
+    const geocoder = new MapboxGeocoder({
+      accessToken: mapboxgl.accessToken,
+      mapboxgl: mapboxgl,
+      placeholder: 'Entrez une adresse', // Texte de préremplissage
+    });
+
+// Obtenir le conteneur DOM du géocodeur
+    const geocoderContainer = geocoder.onAdd(this.map);
+
+// Ajouter le conteneur à un autre élément
+    this.$refs.geocoderContainer.appendChild(geocoderContainer);
+  }
 };
 </script>
 
 <style scoped>
 .map-container {
-  height: 80vh;
-  width: 80vw;
-  margin: auto;
-  margin-top: 20px;
+  width: 70%;
+  margin: 40px auto;
+  position: relative;
 }
 
-/* Pour les écrans de plus de 1200px de large */
-@media (min-width: 1200px) {
-  .map-container {
-    width: 60vw; /* Réduisez la largeur à 60% de la largeur de la fenêtre */
+.map {
+  position: relative;
+  width: 100%;
+  height: 700px;
+}
+
+.flex-center {
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 600px) {
+  .map {
+    height: 400px;
+    width: auto;
   }
 }
+
 </style>
