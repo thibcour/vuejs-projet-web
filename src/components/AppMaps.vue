@@ -67,7 +67,10 @@ export default {
 
       // Ajouter le géocodeur à la carte
       this.map.addControl(geocoder, 'top-left');
+      // Ajouter les boutons de zoom uniquement sur les grands écrans
+      this.map.addControl(new mapboxgl.NavigationControl({ showCompass: false })); // Ajoute le zoom et supprime la boussole
     }
+
 
   }
 };
