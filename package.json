@@ -19,7 +19,8 @@
     "dotenv": "^16.4.3",
     "mapbox-gl": "^2.15.0",
     "mapbox-gl-geocoder": "^2.0.1",
-    "vue": "^3.2.13"
+    "vue": "^3.2.13",
+    "vue-router": "^4.2.5"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",

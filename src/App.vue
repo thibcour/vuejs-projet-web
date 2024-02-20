@@ -1,21 +1,15 @@
 <template>
   <div>
-    <AppNavbar/>
-    <AppMaps />
-    <MeteoApp />
+    <HomePage />
   </div>
 </template>
 
 <script>
-import AppNavbar from './components/AppNavbar.vue'
-import AppMaps from './components/AppMaps.vue'
-import MeteoApp from "@/components/MeteoApp.vue";
+import HomePage from './components/HomePage.vue'
 
 export default {
   components: {
-    AppNavbar,
-    AppMaps,
-    MeteoApp,
+    HomePage,
   },
   data() {
     return {
