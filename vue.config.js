@@ -3,7 +3,7 @@ const path = require('path');
 
 module.exports = defineConfig({
   publicPath: process.env.NODE_ENV === 'production'
-      ? '/repo/'
+      ? '/vuejs-projet-web/'
       : '/',
   transpileDependencies: true,
   devServer: {
