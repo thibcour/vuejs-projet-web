@@ -17,6 +17,7 @@
     "@vue-leaflet/vue-leaflet": "^0.10.1",
     "axios": "^1.6.7",
     "bootstrap": "^5.3.2",
+    "bootstrap-vue-3": "^0.5.1",
     "core-js": "^3.8.3",
     "dotenv": "^16.4.3",
     "firebase": "^10.8.1",
@@ -24,6 +25,7 @@
     "mapbox-gl-geocoder": "^2.0.1",
     "vue": "^3.2.13",
     "vue-router": "^4.2.5",
+    "vue3-carousel": "^0.3.1",
     "vuedraggable": "^2.24.3"
   },
   "devDependencies": {
