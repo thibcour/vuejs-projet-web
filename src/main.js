@@ -1,3 +1,4 @@
+// src/main.js
 import { createApp } from 'vue';
 import App from './App.vue';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -5,6 +6,8 @@ import { Carousel, Slide } from 'vue3-carousel';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { initializeApp } from "firebase/app";
 import 'firebase/database';
+import store from './store'; // Importez le store ici
+import router from './router'; // Importez le routeur ici
 
 // Votre configuration Firebase
 const firebaseConfig = {
@@ -26,4 +29,6 @@ const app = createApp(App);
 app.component('Carousel', Carousel);
 // eslint-disable-next-line vue/multi-word-component-names
 app.component('Slide', Slide);
+app.use(store); // Utilisez le store ici
+app.use(router); // Utilisez le routeur ici
 app.mount('#app');

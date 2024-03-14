@@ -1,15 +1,26 @@
 <template>
   <div>
-    <HomePage />
+    <AppNavbar />
+    <NotificationApp :message="notification.message" :type="notification.type" />
+    <router-view />
   </div>
 </template>
 
 <script>
-import HomePage from './components/HomePage.vue'
+import AppNavbar from './components/AppNavbar.vue';
+import NotificationApp from './components/NotificationApp.vue';
+import { computed } from 'vue';
+import { useStore } from 'vuex';
 
 export default {
   components: {
-    HomePage,
+    AppNavbar,
+    NotificationApp,
+  },
+  setup() {
+    const store = useStore();
+    const notification = computed(() => store.state.notification);
+    return { notification };
   },
   data() {
     return {
@@ -21,7 +32,3 @@ export default {
   },
 };
 </script>
-
-<style>
-/* Ajoutez ici tout style global dont vous avez besoin */
-</style>

@@ -1,6 +1,5 @@
 <template>
   <div>
-    <AppNavbar/>
     <AppMaps />
     <MeteoApp />
     <AppShop />
@@ -8,7 +7,8 @@
 </template>
 
 <script>
-import AppNavbar from './AppNavbar.vue'
+import { computed } from 'vue';
+import { useStore } from 'vuex';
 import AppMaps from './AppMaps.vue'
 import MeteoApp from "./MeteoApp.vue";
 import AppShop from "@/components/AppShop.vue";
@@ -16,10 +16,17 @@ import AppShop from "@/components/AppShop.vue";
 export default {
   name: 'HomePage',
   components: {
-    AppNavbar,
     AppMaps,
     MeteoApp,
     AppShop,
   },
+  setup() {
+    const store = useStore();
+    const isAdmin = computed(() => store.state.admin);
+
+    return {
+      isAdmin
+    };
+  }
 };
 </script>

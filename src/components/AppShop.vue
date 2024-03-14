@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="form-container">
+    <div class="form-container" v-if="isAdmin">
       <form @submit.prevent="addProduct" class="product-form">
         <input type="text" v-model="name" placeholder="Nom du produit" class="form-input">
         <input type="text" v-model="image" placeholder="URL de l'image" class="form-input">
@@ -38,7 +38,8 @@
 </template>
 
 <script>
-import { ref, nextTick, watch } from 'vue'
+import { ref, nextTick, watch,computed } from 'vue';
+import { useStore } from 'vuex';
 import { getDatabase, ref as dbRef, set, onValue } from "firebase/database";
 
 export default {
@@ -50,6 +51,9 @@ export default {
     const categories = ref(['Jeans', 'T-shirt', 'Chaussette', 'Chaussure']);
     const products = ref([]);
     const message = ref('');
+    const store = useStore();
+    const isAdmin = computed(() => store.state.admin);
+
 
     const addProduct = async () => {
       // Vérifier si les champs sont vides
@@ -114,7 +118,7 @@ export default {
     });
 
 
-    return {name, image, price, category, categories, products, addProduct, fetchProducts, scrollToProduct, message};
+    return {isAdmin,name, image, price, category, categories, products, addProduct, fetchProducts, scrollToProduct, message};
   }
 };
 </script>
