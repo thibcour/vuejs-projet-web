@@ -5,6 +5,9 @@ import UserRegister from '../components/UserRegister.vue';
 import NotFound from '../components/NotFound.vue';
 import AdminDashboard from '../components/AdminDashboard.vue';
 import store from '../store'; // Assurez-vous d'importer le store
+import UserManagement from '../components/UserManagement.vue'; // Importez le composant UserManagement
+import ProductManagement from '../components/ProductManagement.vue'; // Importez le composant ProductManagement
+
 
 const routes = [
     {
@@ -32,6 +35,29 @@ const routes = [
         path: '/admin-dashboard', // Ajoutez cette route
         name: 'AdminDashboard',
         component: AdminDashboard
+    },
+    {
+        path: '/:pathMatch(.*)*',
+        name: 'NotFound',
+        component: NotFound
+    },
+    {
+        path: '/admin-dashboard',
+        name: 'AdminDashboard',
+        component: AdminDashboard,
+        meta: { requiresAdmin: true }
+    },
+    {
+        path: '/user-management',
+        name: 'UserManagement',
+        component: UserManagement,
+        meta: { requiresAdmin: true }
+    },
+    {
+        path: '/product-management',
+        name: 'ProductManagement',
+        component: ProductManagement,
+        meta: { requiresAdmin: true }
     },
     {
         path: '/:pathMatch(.*)*',

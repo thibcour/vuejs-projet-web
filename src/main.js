@@ -8,7 +8,6 @@ import { initializeApp } from "firebase/app";
 import 'firebase/database';
 import store from './store';
 import router from './router';
-import VueCookies from 'vue-cookies';
 
 // Votre configuration Firebase
 const firebaseConfig = {
@@ -25,28 +24,8 @@ const firebaseConfig = {
 // Initialisation de Firebase
 initializeApp(firebaseConfig);
 
-// Restaurer l'état de connexion à partir des cookies
-const isLoggedIn = VueCookies.get('isLoggedIn');
-let user = VueCookies.get('user');
-if (isLoggedIn === 'true' && user) {
-    if (typeof user === 'string' && user.startsWith('{') && user.endsWith('}')) {
-        try {
-            user = JSON.parse(user);
-        } catch (error) {
-            console.error("Failed to parse user cookie: ", error);
-        }
-    } else if (typeof user === 'object') {
-        // user is already an object, no need to parse
-    } else {
-        console.error("User cookie is not a valid JSON string or object: ", user);
-    }
-    store.state.isLoggedIn = true;
-    store.state.user = user;
-    store.state.admin = user.admin;
-}
-
 // Vérifiez le statut d'administrateur de l'utilisateur
-store.dispatch('checkAdminStatus').then(() => {
+store.dispatch('init').then(() => {
     const app = createApp(App);
     app.use(store);
     app.use(router);
@@ -58,5 +37,5 @@ store.dispatch('checkAdminStatus').then(() => {
 
     app.mount('#app');
 }).catch(error => {
-    console.error("Failed to check admin status: ", error);
+    console.error("Failed to init store: ", error);
 });

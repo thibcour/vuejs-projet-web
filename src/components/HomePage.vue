@@ -13,6 +13,7 @@ import AppMaps from './AppMaps.vue'
 import MeteoApp from "./MeteoApp.vue";
 import AppShop from "@/components/AppShop.vue";
 
+
 export default {
   name: 'HomePage',
   components: {
@@ -23,9 +24,10 @@ export default {
   setup() {
     const store = useStore();
     const isAdmin = computed(() => store.state.admin);
+    const isLoggedIn = computed(() => store.state.isLoggedIn);
 
     return {
-      isAdmin
+      isAdmin , isLoggedIn
     };
   }
 };
