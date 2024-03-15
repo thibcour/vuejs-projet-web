@@ -33,11 +33,11 @@
     "util": "^0.12.5",
     "vm-browserify": "^1.1.2",
     "vue": "^3.2.13",
+    "vue-cookies": "^1.8.3",
     "vue-router": "^4.2.5",
     "vue3-carousel": "^0.3.1",
     "vuedraggable": "^2.24.3",
-    "vuex": "^4.1.0",
-    "webpack": "^5.90.3"
+    "vuex": "^4.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",
@@ -51,7 +51,8 @@
     "https-browserify": "^1.0.0",
     "process": "^0.11.10",
     "stream-http": "^3.2.0",
-    "url": "^0.11.3"
+    "url": "^0.11.3",
+    "webpack": "^5.90.3"
   },
   "eslintConfig": {
     "root": true,

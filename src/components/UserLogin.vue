@@ -27,8 +27,9 @@
 import { ref } from 'vue';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
-import {ref as dbRef, get, getDatabase} from "firebase/database";
+import { getDatabase, ref as dbRef, get } from "firebase/database";
 import { SHA256 } from 'crypto-js';
+import VueCookies from 'vue-cookies';
 
 export default {
   setup() {
@@ -44,13 +45,13 @@ export default {
       const user = snapshot.val();
       if (user && SHA256(password.value).toString() === user.password) {
         store.state.isLoggedIn = true;
-        store.state.user = user;
-        store.state.admin = user.admin; // Ajoutez cette ligne pour mettre à jour le statut d'administrateur
-        // L'utilisateur est connecté
+        store.state.user = { ...user, username: username.value }; // Ajoutez le nom d'utilisateur ici
+        store.state.admin = user.admin;
         store.dispatch('showNotification', { message: 'Logged in successfully', type: 'success' });
-        router.push('/'); // Redirige vers la page d'accueil
+        router.push('/');
+        VueCookies.set('isLoggedIn', 'true', '1d');
+        VueCookies.set('user', JSON.stringify({ ...user, username: username.value }), '1d'); // Ajoutez le nom d'utilisateur ici aussi
       } else {
-        // Une erreur s'est produite lors de la connexion
         store.dispatch('showNotification', { message: 'Invalid username or password', type: 'error' });
       }
     };

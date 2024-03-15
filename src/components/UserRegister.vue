@@ -45,7 +45,6 @@ export default {
       } else {
         const hashedPassword = SHA256(password.value).toString();
         await set(userRef, {
-          username: username.value,
           password: hashedPassword,
           admin: false
         });

@@ -6,8 +6,9 @@ import { Carousel, Slide } from 'vue3-carousel';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { initializeApp } from "firebase/app";
 import 'firebase/database';
-import store from './store'; // Importez le store ici
-import router from './router'; // Importez le routeur ici
+import store from './store';
+import router from './router';
+import VueCookies from 'vue-cookies';
 
 // Votre configuration Firebase
 const firebaseConfig = {
@@ -24,11 +25,38 @@ const firebaseConfig = {
 // Initialisation de Firebase
 initializeApp(firebaseConfig);
 
-const app = createApp(App);
-// eslint-disable-next-line vue/multi-word-component-names
-app.component('Carousel', Carousel);
-// eslint-disable-next-line vue/multi-word-component-names
-app.component('Slide', Slide);
-app.use(store); // Utilisez le store ici
-app.use(router); // Utilisez le routeur ici
-app.mount('#app');
+// Restaurer l'état de connexion à partir des cookies
+const isLoggedIn = VueCookies.get('isLoggedIn');
+let user = VueCookies.get('user');
+if (isLoggedIn === 'true' && user) {
+    if (typeof user === 'string' && user.startsWith('{') && user.endsWith('}')) {
+        try {
+            user = JSON.parse(user);
+        } catch (error) {
+            console.error("Failed to parse user cookie: ", error);
+        }
+    } else if (typeof user === 'object') {
+        // user is already an object, no need to parse
+    } else {
+        console.error("User cookie is not a valid JSON string or object: ", user);
+    }
+    store.state.isLoggedIn = true;
+    store.state.user = user;
+    store.state.admin = user.admin;
+}
+
+// Vérifiez le statut d'administrateur de l'utilisateur
+store.dispatch('checkAdminStatus').then(() => {
+    const app = createApp(App);
+    app.use(store);
+    app.use(router);
+
+    // eslint-disable-next-line vue/multi-word-component-names
+    app.component('Carousel', Carousel);
+    // eslint-disable-next-line vue/multi-word-component-names
+    app.component('Slide', Slide);
+
+    app.mount('#app');
+}).catch(error => {
+    console.error("Failed to check admin status: ", error);
+});
