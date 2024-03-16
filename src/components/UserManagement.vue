@@ -14,13 +14,17 @@
         <thead>
         <tr>
           <th>Nom d'utilisateur</th>
+          <th>Email</th>
+          <th>UID</th>
           <th>Admin</th>
           <th>Actions</th>
         </tr>
         </thead>
         <tbody>
-        <tr v-for="(user, username) in users" :key="username">
-          <td>{{ username }}</td>
+        <tr v-for="(user, uid) in users" :key="uid">
+          <td>{{ user.username }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ uid }}</td>
           <td>
             <svg v-if="user.admin" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill svg-icon" viewBox="0 0 16 16">
               <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323A.75.75 0 0 0 4.616 8.03l2.363 2.394a.75.75 0 0 0 1.06 0l4.886-4.976a.75.75 0 0 0-.025-1.065z"/>
@@ -30,9 +34,9 @@
             </svg>
           </td>
           <td>
-            <button class="btn btn-primary me-2" @click="openEditModal(user, username)">Modifier</button>
-            <button class="btn btn-danger me-2" @click="deleteUser(username)">Supprimer</button>
-            <button class="btn btn-secondary me-2" @click="toggleAdmin(username)">Changer le statut d'admin</button>
+            <button class="btn btn-primary me-2" @click="openEditUserModal(user, uid)">Modifier</button>
+            <button class="btn btn-danger me-2" @click="deleteUser(uid)">Supprimer</button>
+            <button class="btn btn-secondary me-2" @click="toggleAdmin(uid)">Changer le statut d'admin</button>
           </td>
         </tr>
         </tbody>
@@ -53,10 +57,6 @@
               <input type="text" v-model="editedUser.username" class="form-control">
             </div>
             <div class="mb-3">
-              <label class="form-label">Mot de passe</label>
-              <input type="password" v-model="editedUser.password" class="form-control">
-            </div>
-            <div class="mb-3">
               <label class="form-label">Admin</label>
               <select v-model="editedUser.admin" class="form-control">
                 <option :value="true">True</option>
@@ -66,7 +66,7 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" @click="closeEditUserModal">Fermer</button>
-            <button type="button" class="btn btn-primary" @click="editUser">Enregistrer les modifications</button>
+            <button type="button" class="btn btn-primary" @click="editUser(editedUser, editedUser.uid)">Enregistrer les modifications</button>
           </div>
         </div>
       </div>
@@ -89,6 +89,10 @@
               <input type="password" v-model="newUser.password" class="form-control">
             </div>
             <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" v-model="newUser.email" class="form-control">
+            </div>
+            <div class="mb-3">
               <label class="form-label">Admin</label>
               <select v-model="newUser.admin" class="form-control">
                 <option :value="true">True</option>
@@ -109,114 +113,71 @@
 
 <script>
 import { ref, onMounted } from 'vue';
-import { useStore } from 'vuex';
-import { useRouter } from 'vue-router';
-import { getDatabase, ref as dbRef, onValue, update, remove, get } from "firebase/database";
-import {SHA256} from "crypto-js";
+import {getDatabase, ref as dbRef, onValue, update, get} from "firebase/database";
+import { getAuth, createUserWithEmailAndPassword, updateProfile, deleteUser as firebaseDeleteUser } from "firebase/auth";
+import store from "@/store";
+import { remove } from "firebase/database";
 
 export default {
   setup() {
-    const users = ref([]);
     const db = getDatabase();
-    const router = useRouter();
-    const vuexStore = useStore();
+    const users = ref({});
     const isEditUserModalOpen = ref(false);
     const editedUser = ref({});
     const isAddUserModalOpen = ref(false);
     const newUser = ref({});
-    const oldUsername = ref('');
 
     onMounted(async () => {
-      if (!vuexStore.state.admin) {
-        await router.push('/');
-      } else {
-        const userRef = dbRef(db, 'users');
-        onValue(userRef, (snapshot) => {
-          const usersData = snapshot.val();
-          if (usersData && typeof usersData === 'object') {
-            users.value = usersData; // conservez les utilisateurs en tant qu'objet
-          } else {
-            console.error('usersData is not an object:', usersData);
-          }
-        });
-      }
+      const usersRef = dbRef(db, 'users');
+      onValue(usersRef, (snapshot) => {
+        users.value = snapshot.val();
+      });
     });
 
-    const toggleAdmin = (username) => {
-      if (username && typeof username === 'string') {
-        const userRef = dbRef(db, `users/${username}`);
-        get(userRef).then((snapshot) => {
-          if (snapshot.exists()) {
-            const user = snapshot.val();
-            update(userRef, { admin: !user.admin })
-                .catch((error) => {
-                  console.error(`Failed to toggle admin status for user: ${username}`, error);
-                });
-          } else {
-            console.error('User does not exist:', username);
-          }
-        });
-      } else {
-        console.error('Invalid username:', username);
-      }
+    const toggleAdmin = async (uid) => {
+      const userRef = dbRef(db, `users/${uid}`);
+      const snapshot = await get(userRef);
+      const user = snapshot.val();
+      await update(userRef, { admin: !user.admin });
     };
 
-    const openEditModal = (user, username) => {
-      oldUsername.value = username; // Utilisez le deuxième argument pour définir oldUsername
-      editedUser.value = {...user, username}; // Ajoutez le username à l'objet user
+    const openEditUserModal = (user, uid) => {
+      editedUser.value = { ...user, uid };
       isEditUserModalOpen.value = true;
+      console.log(editedUser.value);
     };
 
     const closeEditUserModal = () => {
       isEditUserModalOpen.value = false;
     };
 
-    const editUser = async () => {
-      let hashedPassword = editedUser.value.password;
-
-      // Vérifiez si le mot de passe a été modifié avant de le hacher à nouveau
-      const oldUserRef = dbRef(db, `users/${oldUsername.value}`);
-      const oldUserSnapshot = await get(oldUserRef);
-      const oldUser = oldUserSnapshot.val();
-      if (oldUser.password !== editedUser.value.password) {
-        hashedPassword = SHA256(editedUser.value.password).toString();
-      }
-
-      // Utilisez le nom d'utilisateur original (oldUsername) comme clé pour mettre à jour l'utilisateur
-      const newUserRef = dbRef(db, `users/${editedUser.value.username}`);
-
-      // Supprimez l'ancien utilisateur
-      await remove(oldUserRef).catch((error) => {
-        console.error(`Échec de la suppression de l'utilisateur : ${oldUsername.value}`, error);
-      });
-
-      // Créez le nouvel utilisateur avec le nouveau nom d'utilisateur
-      await update(newUserRef, {
-        password: hashedPassword,
-        admin: editedUser.value.admin
-      }).catch((error) => {
-        console.error(`Échec de la modification de l'utilisateur : ${editedUser.value.username}`, error);
-      });
+    const editUser = async (editedUser, uid) => {
+      const userRef = dbRef(db, `users/${uid}`);
+      await update(userRef, { admin: editedUser.admin, username: editedUser.username });
 
       closeEditUserModal();
     };
 
 
-    const deleteUser = async (username) => {
-      const usersRef = dbRef(db, 'users');
-      const snapshot = await get(usersRef);
-      const usersData = snapshot.val();
-      const numberOfUsers = Object.keys(usersData).length;
+    const deleteUser = async (uid) => {
+      const auth = getAuth();
+      const user = auth.currentUser;
 
-      if (numberOfUsers <= 1) {
-        console.error('Cannot delete user. At least one user must remain.');
-        return;
+      if (user && user.uid === uid) {
+        // Supprime l'utilisateur de Firebase Authentication
+        await firebaseDeleteUser(user).catch((error) => {
+          console.error(`Failed to delete user: ${uid}`, error);
+        });
+
+        // Supprime l'utilisateur de la base de données en temps réel de Firebase
+        const db = getDatabase();
+        const userRef = dbRef(db, `users/${uid}`);
+        await remove(userRef).catch((error) => {
+          console.error(`Failed to delete user from database: ${uid}`, error);
+        });
+      } else {
+        console.error('User does not exist or is not currently signed in:', uid);
       }
-
-      const userRef = dbRef(db, `users/${username}`);
-      await remove(userRef).catch((error) => {
-        console.error(`Failed to delete user: ${username}`, error);
-      });
     };
 
     const openAddUserModal = () => {
@@ -229,25 +190,28 @@ export default {
     };
 
     const addUser = async () => {
-      const hashedPassword = SHA256(newUser.value.password).toString();
-      const userRef = dbRef(db, `users/${newUser.value.username}`);
-      const snapshot = await get(userRef);
-      if (snapshot.exists()) {
-        newUser.value.errorMessage = 'Utilisateur déjà existant';
-      } else {
-        const userRefTests = dbRef(db, `users/${newUser.value.username}s`); // Pour "tests"
-        const snapshotTests = await get(userRefTests); // Pour "tests"
-        if (snapshotTests.exists()) {
-          newUser.value.errorMessage = 'Un utilisateur avec un nom similaire existe déjà';
-        } else {
-          await update(userRef, {
-            password: hashedPassword,
-            admin: newUser.value.admin
-          }).catch((error) => {
-            console.error(`Échec de l'ajout de l'utilisateur : ${newUser.value.username}`, error);
-          });
-          closeAddUserModal();
-        }
+      const auth = getAuth();
+      const { username, password, email, admin } = newUser.value;
+
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        await updateProfile(user, { displayName: username });
+
+        const db = getDatabase();
+        const userRef = dbRef(db, `users/${user.uid}`);
+        await update(userRef, { admin: admin, email: email, username: username }); // Ajoutez le nom d'utilisateur ici
+
+        closeAddUserModal();
+
+        // Ajoutez cette ligne pour afficher une notification de succès
+        store.dispatch('showNotification', { message: 'Utilisateur ajouté avec succès', type: 'success' });
+      } catch (error) {
+        console.error(`Failed to create user: ${username}`, error.code, error.message);
+
+        // Ajoutez cette ligne pour afficher une notification d'erreur
+        store.dispatch('showNotification', { message: `Échec de l'ajout de l'utilisateur : ${error.message}`, type: 'error' });
       }
     };
 
@@ -256,7 +220,7 @@ export default {
       toggleAdmin,
       isEditUserModalOpen,
       editedUser,
-      openEditModal,
+      openEditUserModal,
       closeEditUserModal,
       editUser,
       deleteUser,
@@ -303,3 +267,10 @@ export default {
 }
 
 </style>
+
+<svg v-if="user.admin" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill svg-icon" viewBox="0 0 16 16">
+<path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323A.75.75 0 0 0 4.616 8.03l2.363 2.394a.75.75 0 0 0 1.06 0l4.886-4.976a.75.75 0 0 0-.025-1.065z"/>
+</svg>
+<svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle-fill svg-icon" viewBox="0 0 16 16">
+<path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.293-2.707a1 1 0 0 0-1.414-1.414L8 6.586 5.707 4.293a1 1 0 0 0-1.414 1.414L6.586 8l-2.293 2.293a1 1 0 0 0 1.414 1.414L8 9.414l2.293 2.293a1 1 0 0 0 1.414-1.414L9.414 8l2.293-2.293z"/>
+</svg>

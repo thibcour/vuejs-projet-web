@@ -2,12 +2,12 @@
 import { createApp } from 'vue';
 import App from './App.vue';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Carousel, Slide } from 'vue3-carousel';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { initializeApp } from "firebase/app";
 import 'firebase/database';
 import store from './store';
 import router from './router';
+
 
 // Votre configuration Firebase
 const firebaseConfig = {
@@ -29,12 +29,6 @@ store.dispatch('init').then(() => {
     const app = createApp(App);
     app.use(store);
     app.use(router);
-
-    // eslint-disable-next-line vue/multi-word-component-names
-    app.component('Carousel', Carousel);
-    // eslint-disable-next-line vue/multi-word-component-names
-    app.component('Slide', Slide);
-
     app.mount('#app');
 }).catch(error => {
     console.error("Failed to init store: ", error);

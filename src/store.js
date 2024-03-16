@@ -1,15 +1,15 @@
 // src/store.js
 import {createStore} from 'vuex';
-import {getAuth, onAuthStateChanged} from "firebase/auth";
-import { getFirestore, doc, getDoc } from "firebase/firestore";
+import {getAuth, onAuthStateChanged, signOut} from "firebase/auth";
+import { getDatabase, ref as dbRef, get } from "firebase/database";
 
 async function checkIfUserIsAdmin(userId) {
-    const db = getFirestore();
-    const userRef = doc(db, 'users', userId);
-    const userSnap = await getDoc(userRef);
-
-    if (userSnap.exists()) {
-        return userSnap.data().admin === true;
+    const db = getDatabase();
+    const userRef = dbRef(db, `users/${userId}`);
+    const snapshot = await get(userRef);
+    const user = snapshot.val();
+    if (user) {
+        return user.admin === true;
     } else {
         throw new Error('User does not exist');
     }
@@ -17,7 +17,6 @@ async function checkIfUserIsAdmin(userId) {
 
 export default createStore({
     state: {
-        // Ajoutez un état de chargement
         isLoading: true,
         isLoggedIn: false,
         user: null,
@@ -29,17 +28,13 @@ export default createStore({
         }
     },
     mutations: {
-        // Ajoutez une mutation pour définir l'état de chargement
         setLoading(state, isLoading) {
             state.isLoading = isLoading;
         },
         setUser(state, user) {
-            console.log('setUser called with:', user);
             state.user = user;
             state.isLoggedIn = !!user;
             state.admin = user ? user.admin : false;
-
-            // Stockez uniquement le jeton d'authentification dans le stockage local
             localStorage.setItem('authToken', user.authToken);
         },
         setNotification(state, notification) {
@@ -49,18 +44,29 @@ export default createStore({
     actions: {
         async init({ dispatch }) {
             return new Promise((resolve, reject) => {
-                const unsubscribe = onAuthStateChanged(getAuth(), () => {
-                    dispatch('checkAdminStatus');
+                const unsubscribe = onAuthStateChanged(getAuth(), (user) => {
+                    if (user) {
+                        dispatch('checkAdminStatus');
+                    }
                     unsubscribe();
                     resolve();
                 }, reject);
             });
         },
-        login({ commit }, user) {
-            commit('setUser', user);
+        async login({ commit }, user) {
+            const isAdmin = await checkIfUserIsAdmin(user.uid);
+            commit('setUser', { ...user, admin: isAdmin });
+            return isAdmin; // return isAdmin from the action
         },
         logout({ commit }) {
-            commit('setUser', null);
+            const auth = getAuth();
+            signOut(auth).then(() => {
+                commit('setUser', null);
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('user');
+            }).catch((error) => {
+                console.error(error);
+            });
         },
         showNotification({ commit }, notification) {
             commit('setNotification', notification);
@@ -74,6 +80,12 @@ export default createStore({
             if (user) {
                 try {
                     const isAdmin = await checkIfUserIsAdmin(user.uid);
+                    const db = getDatabase();
+                    const userRef = dbRef(db, `users/${user.uid}`);
+                    const snapshot = await get(userRef);
+                    if (snapshot.exists()) {
+                        user.username = snapshot.val().username;
+                    }
                     commit('setUser', { ...user, admin: isAdmin });
                     return Promise.resolve();
                 } catch (error) {

@@ -41,11 +41,10 @@ export default {
     const isAdmin = computed(() => store.state.admin); // Ajout de la propriété calculée isAdmin
 
     const logout = () => {
-      store.state.isLoggedIn = false;
-      store.state.user = null;
-      store.state.admin = false; // Mettre à jour le statut d'administrateur
-      router.push('/'); // Redirige vers la page d'accueil lors de la déconnexion
-      store.dispatch('showNotification', { message: 'Logged out successfully', type: 'success' }); // Ajoutez cette ligne pour afficher une notification
+      store.dispatch('logout'); // Call the logout action from the store
+      store.commit('logout'); // Call the logout mutation from the store
+      router.push('/'); // Redirect to the home page after logout
+      store.dispatch('showNotification', { message: 'Logged out successfully', type: 'success' }); // Add this line to show a notification
     };
 
     return {username, isLoggedIn, logout, isAdmin }; // Ajout de isAdmin aux propriétés retournées

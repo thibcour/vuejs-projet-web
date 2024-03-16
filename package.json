@@ -10,6 +10,7 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "@firebase/functions": "^0.11.2",
     "@fortawesome/fontawesome-free": "^6.5.1",
     "@mapbox/mapbox-gl-geocoder": "^5.0.2",
     "@samhess/vue-address-input": "^1.0.0",
@@ -25,7 +26,8 @@
     "crypto-browserify": "^3.12.0",
     "crypto-js": "^4.2.0",
     "dotenv": "^16.4.3",
-    "firebase": "^10.8.1",
+    "firebase": "^10.9.0",
+    "firebase-admin": "^12.0.0",
     "jsonwebtoken": "^9.0.2",
     "mapbox-gl": "^2.15.0",
     "mapbox-gl-geocoder": "^2.0.1",

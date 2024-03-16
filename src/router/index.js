@@ -74,12 +74,18 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
     if (to.matched.some(record => record.meta.requiresAdmin)) {
         if (!store.state.admin) {
-            next({ name: 'Home' }); // Redirige vers la page d'accueil si l'utilisateur n'est pas un administrateur
+            next({ name: 'Home' });
         } else {
-            next(); // Autorise l'accès à la route si l'utilisateur est un administrateur
+            next();
+        }
+    } else if (to.name === 'Login' || to.name === 'Register') {
+        if (store.state.isLoggedIn) {
+            next({ name: 'Home' }); // Redirige vers la page Home si l'utilisateur est déjà connecté
+        } else {
+            next();
         }
     } else {
-        next(); // Autorise l'accès à la route si elle ne nécessite pas d'administrateur
+        next();
     }
 });
 

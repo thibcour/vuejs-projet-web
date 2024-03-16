@@ -7,8 +7,8 @@
           <div class="card-body">
             <form @submit.prevent="login">
               <div class="mb-3">
-                <label class="form-label">Username</label>
-                <input type="text" v-model="username" class="form-control" placeholder="Username" required>
+                <label class="form-label">Email</label>
+                <input type="email" v-model="email" class="form-control" placeholder="Email" required>
               </div>
               <div class="mb-3">
                 <label class="form-label">Password</label>
@@ -26,33 +26,44 @@
 <script>
 import { ref } from 'vue';
 import { useStore } from 'vuex';
-import { useRouter } from 'vue-router';
+import { signInWithEmailAndPassword, getAuth } from "firebase/auth";
 import { getDatabase, ref as dbRef, get } from "firebase/database";
-import { SHA256 } from 'crypto-js';
+import router from "@/router";
 
 export default {
   setup() {
     const store = useStore();
-    const router = useRouter();
-    const username = ref('');
     const password = ref('');
+    const email = ref('');
 
     const login = async () => {
-      const db = getDatabase();
-      const userRef = dbRef(db, `users/${username.value}`);
-      const snapshot = await get(userRef);
-      const user = snapshot.val();
-      if (user && SHA256(password.value).toString() === user.password) {
-        store.commit('setUser', { ...user, username: username.value }); // Utilisez une mutation pour mettre à jour l'état
-        console.log('User logged in:', store.state.user); // Ajoutez cette ligne
-        store.dispatch('showNotification', { message: 'Logged in successfully', type: 'success' });
-        router.push('/');
-      } else {
-        store.dispatch('showNotification', { message: 'Invalid username or password', type: 'error' });
+      const auth = getAuth();
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value);
+        const user = userCredential.user;
+        const db = getDatabase();
+        const userRef = dbRef(db, `users/${user.uid}`);
+        const snapshot = await get(userRef);
+        if (snapshot.exists()) {
+          user.username = snapshot.val().username;
+        }
+        const isAdmin = await store.dispatch('login', user); // get the returned value from the action
+        if (isAdmin) {
+          router.push('/admin-dashboard'); // use router.push here
+        } else {
+          router.push('/'); // Redirect non-admin users to the home page
+        }
+        store.dispatch('showNotification', { message: 'Connexion réussie', type: 'success' });
+        email.value = '';
+        password.value = '';
+      } catch (error) {
+        console.error(error.code); // This will log the error code
+        console.error(error.message); // This will log the error message
+        store.dispatch('showNotification', { message: error.message, type: 'error' });
       }
     };
 
-    return { username, password, login };
+    return { email, password, login };
   }
 };
 </script>
