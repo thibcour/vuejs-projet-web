@@ -1,4 +1,5 @@
 <template>
+  <button class="btn btn-secondary float-right go-back-button" @click="goBack">Retour</button>
   <div class="mt-5">
     <div class="col-6">
       <div class="mb-3">
@@ -140,6 +141,11 @@ import {useRouter} from 'vue-router';
 import {getDatabase, ref as dbRef, onValue, update, get, remove, set} from "firebase/database";
 
 export default {
+  methods: {
+    goBack() {
+      this.$router.push('/admin-dashboard');
+    },
+  },
   setup() {
     const products = ref({});
     const selectedCategory = ref('');
@@ -392,4 +398,11 @@ export default {
    margin-bottom: 10px; /* Ajoute une marge en bas */
    font-weight: bold; /* Rend le texte en gras */
  }
+
+.go-back-button {
+  position: fixed;
+  top: 70px; /* Augmentez cette valeur pour déplacer le bouton vers le bas */
+  right: 10px;
+  z-index: 1000;
+}
 </style>

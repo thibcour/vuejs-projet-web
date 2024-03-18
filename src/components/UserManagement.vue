@@ -1,4 +1,5 @@
 <template>
+  <button class="btn btn-secondary float-right go-back-button" @click="goBack">Retour</button>
   <div class="mt-5">
     <div class="col-6">
       <div class="mb-3">
@@ -119,6 +120,11 @@ import store from "@/store";
 import { remove } from "firebase/database";
 
 export default {
+  methods: {
+    goBack() {
+      this.$router.push('/admin-dashboard');
+    },
+  },
   setup() {
     const db = getDatabase();
     const users = ref({});
@@ -266,11 +272,12 @@ export default {
   font-weight: bold; /* Rend le texte en gras */
 }
 
+.go-back-button {
+  position: fixed;
+  top: 70px; /* Augmentez cette valeur pour déplacer le bouton vers le bas */
+  right: 10px;
+  z-index: 1000;
+}
+
 </style>
 
-<svg v-if="user.admin" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill svg-icon" viewBox="0 0 16 16">
-<path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323A.75.75 0 0 0 4.616 8.03l2.363 2.394a.75.75 0 0 0 1.06 0l4.886-4.976a.75.75 0 0 0-.025-1.065z"/>
-</svg>
-<svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle-fill svg-icon" viewBox="0 0 16 16">
-<path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.293-2.707a1 1 0 0 0-1.414-1.414L8 6.586 5.707 4.293a1 1 0 0 0-1.414 1.414L6.586 8l-2.293 2.293a1 1 0 0 0 1.414 1.414L8 9.414l2.293 2.293a1 1 0 0 0 1.414-1.414L9.414 8l2.293-2.293z"/>
-</svg>

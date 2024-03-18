@@ -21,12 +21,15 @@ export default {
 
 <style scoped>
 .notification {
+  position: fixed; /* Rend la barre de notification fixe */
+  top: 50px; /* Distance entre le haut de la page et la barre de notification */
   width: 100%;
   padding: 15px;
   margin-bottom: 20px;
   border-radius: 3px;
   color: white;
   text-align: center;
+  z-index: 1000; /* Assure que la barre de notification est au-dessus des autres éléments */
 }
 
 .notification.info {

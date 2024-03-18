@@ -1,12 +1,16 @@
 <template>
-  <div>
-    <div class="tiles">
-      <router-link to="/user-management" class="tile">
-        <h2>User Management</h2>
-      </router-link>
-      <router-link to="/product-management" class="tile">
-        <h2>Product Management</h2>
-      </router-link>
+  <div class="dashboard">
+    <div class="card" @click="$router.push('/user-management')">
+      <div class="icon">
+        <i class="fas fa-users"></i>
+      </div>
+      <div class="title">Gestion des utilisateurs</div> <!-- Renamed to French -->
+    </div>
+    <div class="card" @click="$router.push('/product-management')">
+      <div class="icon">
+        <i class="fas fa-box-open"></i>
+      </div>
+      <div class="title">Gestion des produits</div> <!-- Renamed to French -->
     </div>
   </div>
 </template>
@@ -16,26 +20,38 @@ export default {
 };
 </script>
 
-<style>
-/* Styles pour les tuiles */
-.tiles {
+<style scoped>
+.dashboard {
   display: flex;
-  justify-content: space-around;
-  margin-top: 20px;
+  justify-content: center;
+  padding: 20px;
 }
 
-.tile {
-  width: 200px;
-  height: 150px;
+.card {
+  width: 250px; /* Increase the width from 200px to 250px */
+  height: 200px;
   background-color: #f0f0f0;
   border-radius: 10px;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin: 0 10px;
 }
 
-.tile:hover {
-  background-color: #e0e0e0;
+.card:hover {
+  background-color: #e0e0f0;
+}
+
+.icon {
+  font-size: 3em;
+  margin-bottom: 10px;
+}
+
+.title {
+  font-size: 1.30em;
+  font-weight: bold;
 }
 </style>

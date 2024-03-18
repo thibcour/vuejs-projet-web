@@ -5,17 +5,16 @@
         <input type="text" v-model="name" placeholder="Nom du produit" class="form-input">
         <input type="text" v-model="image" placeholder="URL de l'image" class="form-input">
         <input type="text" v-model="price" placeholder="Prix du produit" class="form-input">
-        <select v-model="category" class="form-input">
-          <option disabled value="">Veuillez sélectionner une catégorie</option>
-          <option>Jeans</option>
-          <option>T-shirt</option>
-          <option>Chaussette</option>
-          <option>Chaussure</option>
-          <!-- Ajoutez d'autres options de catégorie ici -->
-        </select>
+          <select v-model="category" class="form-input">
+            <option disabled value="">Veuillez sélectionner une catégorie</option>
+            <option>Jeans</option>
+            <option>T-shirt</option>
+            <option>Chaussette</option>
+            <option>Chaussure</option>
+            <!-- Ajoutez d'autres options de catégorie ici -->
+          </select>
         <button type="submit" class="form-button">Ajouter le produit</button>
       </form>
-      <div v-if="message" class="message">{{ message }}</div>
     </div>
 
     <!-- Carrousel de produits -->
@@ -29,9 +28,27 @@
 
     <!-- Boutons de catégorie -->
     <div class="button-container">
-      <button v-for="category in categories" :key="category" class="category-button" @click="fetchProducts(category)">
-        {{ category }}
-      </button>
+      <div v-if="isLoggedIn">
+        <button class="category-button" @click="showMyCollection = !showMyCollection; showCategories = false">
+          Ma Collection
+        </button>
+        <button class="category-button" @click="showCategories = !showCategories; showMyCollection = false; scrollToCategories()">
+          Collection du Site
+        </button>
+        <div v-if="showCategories" ref="categoryButtons">
+          <button v-for="category in filteredCategories" :key="category" class="category-button" @click="fetchProducts(category)">
+            {{ category }}
+          </button>
+        </div>
+        <div v-if="showMyCollection">
+          <!-- Ici, vous pouvez afficher votre collection -->
+        </div>
+      </div>
+      <div v-else>
+        <button v-for="category in filteredCategories" :key="category" class="category-button" @click="fetchProducts(category)">
+          {{ category }}
+        </button>
+      </div>
     </div>
 
   </div>
@@ -53,13 +70,42 @@ export default {
     const message = ref('');
     const store = useStore();
     const isAdmin = computed(() => store.state.admin);
+    const isLoggedIn = computed(() => store.state.isLoggedIn);
+    const showCategories = ref(false);
+    const showMyCollection = ref(false);
+    const categoryButtons = ref(null);
+
+    const scrollToCategories = () => {
+      nextTick(() => {
+        if (categoryButtons.value) {
+          categoryButtons.value.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    };
 
 
     const addProduct = async () => {
       // Vérifier si les champs sont vides
+      if (!name.value || !image.value) {
+        store.dispatch('showNotification', { message: 'Veuillez remplir tous les champs.', type: 'error' });
+        return; // Arrêter l'exécution de la méthode
+      }
+      // Vérifier si l'URL est valide
+      const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
+      if (!urlRegex.test(image.value)) {
+        store.dispatch('showNotification', { message: 'Veuillez entrer une URL valide.', type: 'error' });
+        return; // Arrêter l'exécution de la méthode
+      }
+
+      // Vérifier si le prix est un entier
+      if (!Number.isInteger(Number(price.value))) {
+        store.dispatch('showNotification', { message: 'Le prix doit être un nombre entier.', type: 'error' });
+        return; // Arrêter l'exécution de la méthode
+      }
+
+      // Vérifier si une catégorie est sélectionnée
       if (!category.value) {
-        // Afficher un message d'erreur
-        message.value = 'Veuillez sélectionner une catégorie.';
+        store.dispatch('showNotification', { message: 'Veuillez sélectionner une catégorie.', type: 'error' });
         return; // Arrêter l'exécution de la méthode
       }
 
@@ -80,12 +126,7 @@ export default {
       category.value = '';
 
       // Afficher le message
-      message.value = 'Le produit a été ajouté avec succès !';
-
-      // Effacer le message après 3 secondes
-      setTimeout(() => {
-        message.value = '';
-      }, 3000);
+      store.dispatch('showNotification', { message: 'Le produit a été ajouté avec succès !', type: 'success' });
     };
 
     const fetchProducts = async (category) => {
@@ -117,9 +158,28 @@ export default {
       });
     });
 
+    const filteredCategories = computed(() => {
+      return categories.value;
+    });
 
-    return {isAdmin,name, image, price, category, categories, products, addProduct, fetchProducts, scrollToProduct, message};
-  }
+    const fetchMyCollection = async () => {
+      const db = getDatabase();
+      const productRef = dbRef(db, `myCollection`);
+      onValue(productRef, (snapshot) => {
+        products.value = snapshot.val();
+      });
+    };
+
+    const fetchSiteCollection = async () => {
+      const db = getDatabase();
+      const productRef = dbRef(db, `siteCollection`);
+      onValue(productRef, (snapshot) => {
+        products.value = snapshot.val();
+      });
+    };
+
+
+    return {isAdmin,name, image, price, category, categories, products, addProduct, fetchProducts, fetchMyCollection, fetchSiteCollection, scrollToProduct, message, filteredCategories, isLoggedIn, showCategories, showMyCollection, categoryButtons, scrollToCategories};  }
 };
 </script>
 
