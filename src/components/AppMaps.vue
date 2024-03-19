@@ -1,5 +1,6 @@
 <template>
-  <div class="map-container">
+  <br/>
+  <div class="map-container rounded-map">
     <div ref="geocoderContainer" class="geocoder-container flex-center"></div>
     <div ref="map" class="map"></div>
     <div ref="geolocateContainer" class="geolocate-container">
@@ -26,12 +27,12 @@ export default {
     // Créer la carte
     this.map = new mapboxgl.Map({
       container: this.$refs.map,
-      style: 'mapbox://styles/mapbox/streets-v11',
+      style: 'mapbox://styles/mapbox/navigation-preview-night-v4',
       center: [2.3522, 48.8566], // Paris par défaut
       zoom: 11,
       attributionControl: false // Supprimer l'attribution
     });
-// Ajouter le contrôle de géolocalisation
+    // Ajouter le contrôle de géolocalisation
     const geolocateControl = new mapboxgl.GeolocateControl({
       positionOptions: {
         enableHighAccuracy: true // Activer la haute précision
@@ -101,8 +102,6 @@ export default {
     width: auto;
   }
 }
-
-
 
 
 </style>

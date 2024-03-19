@@ -1,23 +1,18 @@
 <template>
+  <br/>
   <div>
-    <div class="form-container" v-if="isAdmin">
-      <form @submit.prevent="addProduct" class="product-form">
-        <input type="text" v-model="name" placeholder="Nom du produit" class="form-input">
-        <input type="text" v-model="image" placeholder="URL de l'image" class="form-input">
-        <input type="text" v-model="price" placeholder="Prix du produit" class="form-input">
-          <select v-model="category" class="form-input">
-            <option disabled value="">Veuillez sélectionner une catégorie</option>
-            <option>Jeans</option>
-            <option>T-shirt</option>
-            <option>Chaussette</option>
-            <option>Chaussure</option>
-            <!-- Ajoutez d'autres options de catégorie ici -->
-          </select>
-        <button type="submit" class="form-button">Ajouter le produit</button>
-      </form>
-    </div>
+  <template v-if="currentCollection === 'myCollection'">
+    <div ref="productsSection" class="products-container">
+      <div v-for="product in userProducts" :key="product.name" class="product-item">
+        <img :src="product.image" :alt="product.name" class="product-image" @load="scrollToProduct">
+        <div>{{ product.name }}</div>
+        <div>{{ product.price }}</div>
+        <button v-if="isLoggedIn" class="remove-from-collection-button" @click="removeProductFromMyCollection(product)">Supprimer de ma collection</button>
+      </div>
 
-    <!-- Carrousel de produits -->
+    </div>
+  </template>
+  <template v-else>
     <div ref="productsSection" class="products-container">
       <div v-for="product in products" :key="product.name" class="product-item">
         <img :src="product.image" :alt="product.name" class="product-image" @load="scrollToProduct">
@@ -25,29 +20,72 @@
         <div>{{ product.price }}</div>
       </div>
     </div>
+  </template>
+    <div class="button-container" >
+      <button v-if="currentCollection === 'myCollection'" class="category-button" @click="showAddProductModal = true">
+        Ajouter un produit
+      </button>
+    </div>
 
-    <!-- Boutons de catégorie -->
-    <div class="button-container">
-      <div v-if="isLoggedIn">
-        <button class="category-button" @click="showMyCollection = !showMyCollection; showCategories = false">
-          Ma Collection
-        </button>
-        <button class="category-button" @click="showCategories = !showCategories; showMyCollection = false; scrollToCategories()">
+
+    <div class="button-container" v-if="isLoggedIn">
+      <div class="category-buttons">
+        <button class="category-button" @click="handleButtonClick">Ma Collection</button>
+        <button class="category-button" @click="handleSiteCollectionClick">
           Collection du Site
         </button>
-        <div v-if="showCategories" ref="categoryButtons">
-          <button v-for="category in filteredCategories" :key="category" class="category-button" @click="fetchProducts(category)">
-            {{ category }}
-          </button>
-        </div>
-        <div v-if="showMyCollection">
-          <!-- Ici, vous pouvez afficher votre collection -->
-        </div>
       </div>
-      <div v-else>
-        <button v-for="category in filteredCategories" :key="category" class="category-button" @click="fetchProducts(category)">
+      <button v-if="showMyCollection" class="category-button" @click="showAddProductModal = true">
+      Ajouter un produit
+      </button>
+      <div v-if="showCategories" ref="categoryButtons">
+        <button v-for="category in filteredCategories" :key="category" class="category-button" @click="fetchProducts(category); selectedCategory = category">
           {{ category }}
         </button>
+      </div>
+    </div>
+    <div class="modal" tabindex="-1" v-if="showAddProductModal" :class="{ 'show d-block': showAddProductModal }">
+    <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Ajouter un produit</h5>
+            <button type="button" class="btn-close" @click="showAddProductModal = false"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">Nom du produit</label>
+              <input type="text" v-model="newProduct.name" class="form-control" placeholder="Entrez le nom du produit">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Prix du produit</label>
+              <input type="number" v-model="newProduct.price" class="form-control" placeholder="Entrez le prix du produit">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Lien de la photo du produit ou télécharger un fichier</label>
+              <div>
+                <input type="radio" id="link" value="link" v-model="imageOption">
+                <label for="link">Lien</label>
+                <input type="radio" id="file" value="file" v-model="imageOption">
+                <label for="file">Fichier</label>
+              </div>
+              <input v-if="imageOption === 'link'" type="text" v-model="newProduct.image" class="form-control" placeholder="Entrez le lien de l'image du produit">
+              <input v-else type="file" @change="handleFileUpload" class="form-control">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Catégorie du produit</label>
+              <select v-model="newProduct.category" class="form-control">
+                <option v-for="category in categories" :key="category" :value="category">{{ category }}</option>
+                <option value="new">Ajouter une nouvelle catégorie</option>
+              </select>
+              <br/>
+              <input v-if="newProduct.category === 'new'" type="text" v-model="newCategory" class="form-control" placeholder="Entrez le nom de la nouvelle catégorie">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="showAddProductModal = false">Fermer</button>
+            <button type="button" class="btn btn-primary" @click="addProduct">Ajouter le produit</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -55,16 +93,186 @@
 </template>
 
 <script>
-import { ref, nextTick, watch,computed } from 'vue';
+import { getAuth } from "firebase/auth";
+import { ref,nextTick, watch, computed } from 'vue';
 import { useStore } from 'vuex';
-import { getDatabase, ref as dbRef, set, onValue } from "firebase/database";
+import { getDatabase, ref as dbRef, set, onValue, remove } from "firebase/database";
+import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 export default {
+  data() {
+    return {
+      currentCollection: 'siteCollection', // Ajoutez cette ligne
+      newCategory: '',
+      userId: null,
+      imageOption: 'link',
+      showAddProductModal: false,
+      newProduct: {
+        name: '',
+        price: '',
+        image: '',
+        category: ''
+      },
+      uploadedFile: null, // Ajoutez cette ligne
+    };
+  },
+  created() {
+    const auth = getAuth();
+    this.userId = auth.currentUser ? auth.currentUser.uid : null;
+    this.fetchCategories(); // Appelez fetchCategories lors de la création du composant
+    if (this.userId) {
+      this.currentCollection = 'myCollection';
+    }
+  },
+  methods: {
+
+    fetchMyCollection: function() {
+      return new Promise((resolve) => {
+        const db = getDatabase();
+        const productRef = dbRef(db, `users/${this.userId}/products`);
+        console.log(`Fetching products from: users/${this.userId}/products`); // Log the database path
+        onValue(productRef, (snapshot) => {
+          const data = snapshot.val();
+          console.log('Fetched data:', data); // Log the fetched data
+          if (data) {
+            // Transformez l'objet de produits en tableau de produits
+            this.userProducts = Object.keys(data).map(category => {
+              return Object.keys(data[category]).map(name => {
+                return {
+                  category: category,
+                  name: name,
+                  ...data[category][name]
+                };
+              });
+            }).flat();
+          }
+          resolve();
+        });
+      });
+    },
+
+    fetchCategories: async function() {
+      const db = getDatabase();
+      const categoriesRef = dbRef(db, `products`); // Récupérez les catégories de 'products'
+      onValue(categoriesRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          this.categories = Object.keys(data);
+        }
+      });
+    },
+
+    handleSiteCollectionClick() {
+      this.currentCollection = 'siteCollection';
+      this.resetView();
+    },
+    resetView() {
+      this.showCategories = !this.showCategories;
+      this.showMyCollection = false;
+      this.scrollToCategories();
+      this.selectedCategory = null;
+      this.products = []; // Réinitialisez les produits ici
+    },
+    removeProductFromMyCollection(product) {
+      const db = getDatabase();
+      const productRef = dbRef(db, `users/${this.userId}/products/${product.category}/${product.name}`);
+      remove(productRef).then(() => {
+        this.$store.dispatch('showNotification', { message: 'Produit supprimé de votre collection avec succès !', type: 'success' }); // Affichez la notification
+        // Mettez à jour la liste des produits
+        const index = this.userProducts.findIndex(p => p.name === product.name && p.category === product.category);
+        if (index !== -1) {
+          this.userProducts.splice(index, 1);
+          this.userProducts = [...this.userProducts]; // Créez une nouvelle instance du tableau
+        }
+        // Rafraîchir la collection après la suppression
+        this.fetchMyCollection();
+      });
+    },
+    addProductToMyCollection(product) {
+      const db = getDatabase();
+      const productRef = dbRef(db, `users/${this.userId}/myCollection/${product.category}/${product.name}`);
+      set(productRef, product);
+    },
+    handleFileUpload(event) {
+      const file = event.target.files[0];
+      this.uploadedFile = file; // Stockez le fichier téléchargé
+      this.newProduct.image = URL.createObjectURL(file);
+    },
+    handleButtonClick() {
+      this.currentCollection = 'myCollection';
+      console.log('Fetching my collection...');
+      this.fetchMyCollection().then(() => {
+        this.showCategories = false;
+        this.products = []; // Réinitialisez les produits ici
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      });
+    },
+    addProduct: async function() {
+      if (!this.newProduct.name || !this.newProduct.price || !this.newProduct.image || !this.newProduct.category) {
+        this.$store.dispatch('showNotification', { message: 'Veuillez remplir tous les champs.', type: 'error' });
+        return;
+      }
+      if (this.imageOption === 'file' && !(this.uploadedFile instanceof File)) {
+        console.error('uploadedFile is not a File object');
+        return;
+      }
+
+      let imageUrl = this.newProduct.image;
+      if (this.imageOption === 'file') {
+        imageUrl = await this.uploadImage(this.uploadedFile, this.userId);
+      }
+
+      const db = getDatabase();
+      const category = this.newProduct.category === 'new' ? this.newCategory : this.newProduct.category; // Utilisez newCategory si newProduct.category est 'new'
+      const productRef = dbRef(db, `users/${this.userId}/products/${category}/${this.newProduct.name}`);
+      set(productRef, {
+        name: this.newProduct.name,
+        image: imageUrl,
+        price: this.newProduct.price
+      }).then(() => {
+        this.newProduct.name = '';
+        this.newProduct.price = '';
+        this.newProduct.category = '';
+        this.newProduct.image = '';
+        this.newCategory = ''; // Réinitialisez newCategory
+        this.uploadedFile = null;
+        this.showAddProductModal = false;
+        this.$store.dispatch('showNotification', { message: 'Produit ajouté avec succès !', type: 'success' });
+        if (this.newProduct.category === 'new') {
+          this.categories = [...this.categories, this.newCategory]; // Réaffectez le tableau entier
+        }
+      });
+    },
+    uploadImage: async function(file, userId) {
+      const storage = getStorage();
+      const storageReference = storageRef(storage, `users/${userId}/products/${file.name}`);
+      const uploadTask = uploadBytesResumable(storageReference, file);
+
+      return new Promise((resolve, reject) => {
+        uploadTask.on('state_changed',
+            (snapshot) => {
+              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+              console.log('Upload is ' + progress + '% done');
+            },
+            (error) => {
+              reject(error);
+            },
+            () => {
+              getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                resolve(downloadURL);
+              });
+            }
+        );
+      });
+    },
+  },
+  mounted() {
+
+  },
   setup() {
     const name = ref('');
-    const image = ref('');
     const price = ref('');
-    const category = ref(''); // Ajout d'une référence pour la catégorie
+    const category = ref('');
     const categories = ref(['Jeans', 'T-shirt', 'Chaussette', 'Chaussure']);
     const products = ref([]);
     const message = ref('');
@@ -74,59 +282,13 @@ export default {
     const showCategories = ref(false);
     const showMyCollection = ref(false);
     const categoryButtons = ref(null);
-
+    const selectedCategory = ref(null);
     const scrollToCategories = () => {
       nextTick(() => {
         if (categoryButtons.value) {
           categoryButtons.value.scrollIntoView({ behavior: 'smooth' });
         }
       });
-    };
-
-
-    const addProduct = async () => {
-      // Vérifier si les champs sont vides
-      if (!name.value || !image.value) {
-        store.dispatch('showNotification', { message: 'Veuillez remplir tous les champs.', type: 'error' });
-        return; // Arrêter l'exécution de la méthode
-      }
-      // Vérifier si l'URL est valide
-      const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
-      if (!urlRegex.test(image.value)) {
-        store.dispatch('showNotification', { message: 'Veuillez entrer une URL valide.', type: 'error' });
-        return; // Arrêter l'exécution de la méthode
-      }
-
-      // Vérifier si le prix est un entier
-      if (!Number.isInteger(Number(price.value))) {
-        store.dispatch('showNotification', { message: 'Le prix doit être un nombre entier.', type: 'error' });
-        return; // Arrêter l'exécution de la méthode
-      }
-
-      // Vérifier si une catégorie est sélectionnée
-      if (!category.value) {
-        store.dispatch('showNotification', { message: 'Veuillez sélectionner une catégorie.', type: 'error' });
-        return; // Arrêter l'exécution de la méthode
-      }
-
-      // Obtenir une référence à la base de données Firebase
-      const db = getDatabase();
-
-      // Créer un nouvel objet dans Firebase avec les détails du produit
-      const productRef = dbRef(db, `products/${category.value}/${name.value}`); // Utilisation de la catégorie comme clé parente
-      set(productRef, {
-        name: name.value,
-        image: image.value,
-        price: price.value
-      });
-      // Réinitialiser les valeurs du formulaire
-      name.value = '';
-      image.value = '';
-      price.value = '';
-      category.value = '';
-
-      // Afficher le message
-      store.dispatch('showNotification', { message: 'Le produit a été ajouté avec succès !', type: 'success' });
     };
 
     const fetchProducts = async (category) => {
@@ -146,10 +308,7 @@ export default {
       });
     };
 
-
-
     watch(products, () => {
-      // Scroll to the products section after products are updated
       nextTick(() => {
         const firstProductImage = document.querySelector('.product-image');
         if (firstProductImage) {
@@ -162,14 +321,6 @@ export default {
       return categories.value;
     });
 
-    const fetchMyCollection = async () => {
-      const db = getDatabase();
-      const productRef = dbRef(db, `myCollection`);
-      onValue(productRef, (snapshot) => {
-        products.value = snapshot.val();
-      });
-    };
-
     const fetchSiteCollection = async () => {
       const db = getDatabase();
       const productRef = dbRef(db, `siteCollection`);
@@ -178,8 +329,8 @@ export default {
       });
     };
 
-
-    return {isAdmin,name, image, price, category, categories, products, addProduct, fetchProducts, fetchMyCollection, fetchSiteCollection, scrollToProduct, message, filteredCategories, isLoggedIn, showCategories, showMyCollection, categoryButtons, scrollToCategories};  }
+    return {fetchSiteCollection, isAdmin,name, price, category, categories, products, fetchProducts, scrollToProduct, message, filteredCategories, isLoggedIn, showCategories, showMyCollection, categoryButtons, scrollToCategories, selectedCategory};
+  },
 };
 </script>
 
@@ -190,27 +341,29 @@ export default {
   flex-wrap: wrap;
   justify-content: center;
 }
+
 .button-container {
   display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
+  flex-direction: column; /* Change this to column */
+  align-items: center;
   margin-top: 20px;
 }
 
 .category-button {
+  justify-content: center;
   padding: 10px 20px;
-  background-color: #4CAF50; /* Vous pouvez changer la couleur de fond */
+  background-color: #4CAF50;
   border: none;
   border-radius: 5px;
-  color: white; /* Vous pouvez changer la couleur du texte */
-  font-size: 16px; /* Vous pouvez changer la taille du texte */
+  color: white;
+  font-size: 16px;
   cursor: pointer;
   margin: 5px;
   transition: background-color 0.3s ease;
 }
 
 .category-button:hover {
-  background-color: #45a049; /* Vous pouvez changer la couleur de fond au survol */
+  background-color: #45a049;
 }
 
 .product-image {
@@ -289,5 +442,52 @@ export default {
 
 .message[hidden] {
   opacity: 0;
+}
+
+.add-to-collection-button {
+  justify-content: center;
+  padding: 10px 20px;
+  background-color: gray; /* Changez la couleur de fond en gris */
+  border: none;
+  border-radius: 5px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  margin: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.add-to-collection-button:hover {
+  background-color: darkgray; /* Changez la couleur de fond en gris foncé lors du survol */
+}
+
+.modal {
+  margin-top: 75px; /* Ajoutez cette ligne */
+  tabindex: -1;
+}
+
+.remove-from-collection-button {
+  justify-content: center;
+  padding: 10px 20px;
+  background-color: red; /* Changez la couleur de fond en rouge */
+  border: none;
+  border-radius: 5px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  margin: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.remove-from-collection-button:hover {
+  background-color: darkred; /* Changez la couleur de fond en rouge foncé lors du survol */
+}
+
+
+.add-product-button {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  margin: 20px;
 }
 </style>

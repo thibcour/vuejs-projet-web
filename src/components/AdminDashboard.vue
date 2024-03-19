@@ -1,16 +1,18 @@
 <template>
+  <br/>
+  <br/>
   <div class="dashboard">
     <div class="card" @click="$router.push('/user-management')">
       <div class="icon">
         <i class="fas fa-users"></i>
       </div>
-      <div class="title">Gestion des utilisateurs</div> <!-- Renamed to French -->
+      <div class="title">Gestion des utilisateurs</div>
     </div>
     <div class="card" @click="$router.push('/product-management')">
       <div class="icon">
         <i class="fas fa-box-open"></i>
       </div>
-      <div class="title">Gestion des produits</div> <!-- Renamed to French -->
+      <div class="title">Gestion des produits</div>
     </div>
   </div>
 </template>
@@ -28,7 +30,7 @@ export default {
 }
 
 .card {
-  width: 250px; /* Increase the width from 200px to 250px */
+  width: 250px;
   height: 200px;
   background-color: #f0f0f0;
   border-radius: 10px;

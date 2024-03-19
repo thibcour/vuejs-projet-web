@@ -41,13 +41,13 @@ export default {
     const isAdmin = computed(() => store.state.admin); // Ajout de la propriété calculée isAdmin
 
     const logout = () => {
-      store.dispatch('logout'); // Call the logout action from the store
-      store.commit('logout'); // Call the logout mutation from the store
-      router.push('/'); // Redirect to the home page after logout
-      store.dispatch('showNotification', { message: 'Logged out successfully', type: 'success' }); // Add this line to show a notification
+      store.dispatch('logout'); // action de déconnexion
+      store.commit('logout'); // mutation de déconnexion (pour effacer les données de l'utilisateur)
+      router.push('/'); // Rediriger vers la page d'accueil
+        store.dispatch('showNotification', { message: 'Deconnexion réussie', type: 'success' }); // Afficher une notification de déconnexion
     };
 
-    return {username, isLoggedIn, logout, isAdmin }; // Ajout de isAdmin aux propriétés retournées
+    return {username, isLoggedIn, logout, isAdmin };
   },
 };
 </script>
