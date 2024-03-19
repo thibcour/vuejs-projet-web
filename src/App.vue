@@ -2,8 +2,6 @@
   <div>
     <AppNavbar />
     <NotificationApp :message="notification.message" :type="notification.type" />
-    <br/>
-    <br/>
     <router-view />
   </div>
 </template>

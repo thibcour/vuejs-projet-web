@@ -1,26 +1,29 @@
 <template>
   <br/>
   <div>
-  <template v-if="currentCollection === 'myCollection'">
-    <div ref="productsSection" class="products-container">
-      <div v-for="product in userProducts" :key="product.name" class="product-item">
-        <img :src="product.image" :alt="product.name" class="product-image" @load="scrollToProduct">
-        <div>{{ product.name }}</div>
-        <div>{{ product.price }}</div>
-        <button v-if="isLoggedIn" class="remove-from-collection-button" @click="removeProductFromMyCollection(product)">Supprimer de ma collection</button>
+    <template v-if="currentCollection === 'myCollection'">
+      <div ref="productsSection" class="products-container">
+        <div v-for="product in userProducts" :key="product.name" class="product-item card">
+          <img :src="product.image" :alt="product.name" class="product-image card-img-top" @load="scrollToProduct">
+          <div class="card-body">
+            <h5 class="card-title">{{ product.name }}</h5>
+            <p class="card-text">{{ product.price }}€</p>
+            <button v-if="isLoggedIn" class="remove-from-collection-button btn btn-primary" @click="removeProductFromMyCollection(product)">Supprimer de ma collection</button>
+          </div>
+        </div>
       </div>
-
-    </div>
-  </template>
-  <template v-else>
-    <div ref="productsSection" class="products-container">
-      <div v-for="product in products" :key="product.name" class="product-item">
-        <img :src="product.image" :alt="product.name" class="product-image" @load="scrollToProduct">
-        <div>{{ product.name }}</div>
-        <div>{{ product.price }}</div>
+    </template>
+    <template v-else>
+      <div ref="productsSection" class="products-container">
+        <div v-for="product in products" :key="product.name" class="product-item card">
+          <img :src="product.image" :alt="product.name" class="product-image card-img-top" @load="scrollToProduct">
+          <div class="card-body">
+            <h5 class="card-title">{{ product.name }}</h5>
+            <p class="card-text">{{ product.price }}€</p>
+          </div>
+        </div>
       </div>
-    </div>
-  </template>
+    </template>
     <div class="button-container" >
       <button v-if="currentCollection === 'myCollection'" class="category-button" @click="showAddProductModal = true">
         Ajouter un produit
@@ -489,5 +492,69 @@ export default {
   bottom: 0;
   right: 0;
   margin: 20px;
+}
+
+.product-item {
+  margin: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.products-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 20px;
+  background-color: #f8f9fa;
+}
+
+.product-item {
+  margin: 20px;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  background-color: white;
+}
+
+.product-image {
+  max-width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.card-title {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.card-text {
+  font-size: 20px;
+  color: #6c757d;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  background-color: #007bff;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+  background-color: #0056b3;
 }
 </style>

@@ -1,5 +1,4 @@
 <template>
-  <br/>
   <div class="map-container rounded-map">
     <div ref="geocoderContainer" class="geocoder-container flex-center"></div>
     <div ref="map" class="map"></div>

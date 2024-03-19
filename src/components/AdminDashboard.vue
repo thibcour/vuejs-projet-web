@@ -1,6 +1,5 @@
 <template>
   <br/>
-  <br/>
   <div class="dashboard">
     <div class="card" @click="$router.push('/user-management')">
       <div class="icon">
