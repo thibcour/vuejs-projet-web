@@ -11,7 +11,7 @@
       <p>Humidité: {{ weatherData.current.humidity }}%</p>
       <p>Wind speed: {{weatherData.current.wind_speed}}km/H</p>
       <p>Weather: {{weatherData.current.weather.description}}</p>
-      <!-- Add more weather data fields here as needed -->
+      <!-- Add more weather data fields here as needed  -->
       <article class="widget">
         <div class="weatherIcon"><i class="wi wi-day-cloudy"></i></div>
         <div class="weatherInfo">
