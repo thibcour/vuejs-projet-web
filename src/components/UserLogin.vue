@@ -1,5 +1,4 @@
 <template>
-  <br/>
   <div class="container mt-5">
     <div class="row justify-content-center">
       <div class="col-md-12">
@@ -71,7 +70,7 @@ export default {
 
 <style scoped>
 .card {
-  width: 120%;
+  width: 80%;
   margin: auto;
 }
 </style>

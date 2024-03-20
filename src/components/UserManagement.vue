@@ -23,9 +23,9 @@
         </thead>
         <tbody>
         <tr v-for="(user, uid) in users" :key="uid">
-          <td>{{ user.username }}</td>
-          <td>{{ user.email }}</td>
-          <td>{{ uid }}</td>
+          <td class="username">{{ user.username }}</td>
+          <td class="email">{{ user.email }}</td>
+          <td class="uid">{{ uid }}</td>
           <td>
             <svg v-if="user.admin" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill svg-icon" viewBox="0 0 16 16">
               <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323A.75.75 0 0 0 4.616 8.03l2.363 2.394a.75.75 0 0 0 1.06 0l4.886-4.976a.75.75 0 0 0-.025-1.065z"/>
@@ -277,6 +277,25 @@ export default {
   top: 70px; /* Augmentez cette valeur pour déplacer le bouton vers le bas */
   right: 10px;
   z-index: 1000;
+}
+ .table-responsive table th.username, .table-responsive table td.username {
+   max-width: 100px; /* Ajustez cette valeur en fonction de vos besoins */
+ }
+
+.table-responsive table th.email, .table-responsive table td.email {
+  max-width: 100px; /* Réduisez cette valeur en fonction de vos besoins */
+}
+
+.table-responsive table th.uid, .table-responsive table td.uid {
+  max-width: 50px; /* Ajustez cette valeur en fonction de vos besoins */
+}
+
+.table-responsive table th.admin, .table-responsive table td.admin {
+  max-width: 50px; /* Ajustez cette valeur en fonction de vos besoins */
+}
+
+.table-responsive table th.actions, .table-responsive table td.actions {
+  max-width: 300px; /* Ajustez cette valeur en fonction de vos besoins */
 }
 
 </style>
