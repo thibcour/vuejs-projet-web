@@ -65,10 +65,6 @@
     </div>
   </div>
 
-
-
-
-
   </template>
 
 
@@ -84,7 +80,7 @@ export default {
   data() {
     return {
       loading: false,
-      weatherData: this.updateWeatherData(48.866667,2.333333),
+      weatherData: null,
       mapboxAccessToken: process.env.VUE_APP_MAPBOX_ACCESS_TOKEN,
       latitude: 0,
       longitude: 0,

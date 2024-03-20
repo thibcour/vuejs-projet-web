@@ -91,7 +91,6 @@
         </div>
       </div>
     </div>
-
   </div>
 </template>
 
@@ -556,5 +555,44 @@ export default {
 
 .btn:hover {
   background-color: #0056b3;
+}
+
+.login-message {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  text-align: center;
+  background-color: #f8f9fa;
+  color: #333;
+}
+
+.login-message h2 {
+  font-size: 2.5em;
+  margin-bottom: 1em;
+}
+
+.login-message p {
+  font-size: 1.2em;
+  margin-bottom: 2em;
+}
+
+.login-message .btn {
+  margin: 0.5em;
+  padding: 1em 2em;
+  font-size: 1em;
+  border-radius: 5px;
+  text-decoration: none;
+}
+
+.login-message .btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.login-message .btn-secondary {
+  background-color: #6c757d;
+  color: white;
 }
 </style>
