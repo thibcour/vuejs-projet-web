@@ -80,7 +80,7 @@ export default {
   data() {
     return {
       loading: false,
-      weatherData: null,
+      weatherData: this.updateWeatherData(48.866667,2.333333),
       mapboxAccessToken: process.env.VUE_APP_MAPBOX_ACCESS_TOKEN,
       latitude: 0,
       longitude: 0,
@@ -521,7 +521,6 @@ body {
   -webkit-box-shadow: 0 0 50px -5px rgba(0, 0, 0, 0.25);
   box-shadow: 0 0 50px -5px rgba(0, 0, 0, 0.25);
   border-radius: 10px;
-  background: #
 }
 
 .week-list>li {
