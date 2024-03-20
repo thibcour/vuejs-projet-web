@@ -70,7 +70,7 @@ export default {
 
 <style scoped>
 .card {
-  width: 120%;
+  width: 80%;
   margin: auto;
 }
 </style>

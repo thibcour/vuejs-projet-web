@@ -159,16 +159,19 @@ body {
 }
 
 .widget {
-  position: absolute;
+  position: relative;
+  margin-top: 20px; /* Ajustez cette valeur en fonction de vos besoins */
+  /* Supprimez ces lignes
   top: 100%;
   left: 50%;
+  transform: translate(-50%, -50%);
+  */
   display: flex;
   height: 300px;
   width: 600px;
-  transform: translate(-50%, -50%);
   flex-wrap: wrap;
   cursor: pointer;
-  border-radius: $border-radius;
+  border-radius: 20px;
   box-shadow: 0 27px 55px 0 rgba(0, 0, 0, 0.3), 0 17px 17px 0 rgba(0, 0, 0, 0.15);
 
   .weatherIcon{

@@ -226,7 +226,7 @@ export default {
       }
 
       const db = getDatabase();
-      const category = this.newProduct.category === 'new' ? this.newCategory : this.newProduct.category; // Utilisez newCategory si newProduct.category est 'new'
+      const category = this.newProduct.category === 'new' ? this.newCategory : this.newProduct.category;
       const productRef = dbRef(db, `users/${this.userId}/products/${category}/${this.newProduct.name}`);
       set(productRef, {
         name: this.newProduct.name,
@@ -450,7 +450,7 @@ export default {
 .add-to-collection-button {
   justify-content: center;
   padding: 10px 20px;
-  background-color: gray; /* Changez la couleur de fond en gris */
+  background-color: gray;
   border: none;
   border-radius: 5px;
   color: white;
@@ -461,11 +461,11 @@ export default {
 }
 
 .add-to-collection-button:hover {
-  background-color: darkgray; /* Changez la couleur de fond en gris foncé lors du survol */
+  background-color: darkgray;
 }
 
 .modal {
-  margin-top: 75px; /* Ajoutez cette ligne */
+  margin-top: 75px;
   tabindex: -1;
 }
 
@@ -483,7 +483,7 @@ export default {
 }
 
 .remove-from-collection-button:hover {
-  background-color: darkred; /* Changez la couleur de fond en rouge foncé lors du survol */
+  background-color: darkred; /* rouge foncé lors du survol  */
 }
 
 
