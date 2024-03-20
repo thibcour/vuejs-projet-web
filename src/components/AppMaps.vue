@@ -63,9 +63,6 @@
         </div>
       </div>
     </div>
-    <div v-else>
-      <p>No weather data available.</p>
-    </div>
   </div>
 
 
@@ -87,7 +84,7 @@ export default {
   data() {
     return {
       loading: false,
-      weatherData: null,
+      weatherData: this.updateWeatherData(48.866667,2.333333),
       mapboxAccessToken: process.env.VUE_APP_MAPBOX_ACCESS_TOKEN,
       latitude: 0,
       longitude: 0,
