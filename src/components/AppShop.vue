@@ -25,7 +25,7 @@
       </div>
     </template>
     <div class="button-container" >
-      <button v-if="currentCollection === 'myCollection'" class="category-button" @click="showAddProductModal = true">
+      <button class="category-button" @click="goToAddProductPage">
         Ajouter un produit
       </button>
     </div>
@@ -39,7 +39,7 @@
         </button>
       </div>
       <button v-if="showMyCollection" class="category-button" @click="showAddProductModal = true">
-      Ajouter un produit
+        Ajouter un produit
       </button>
       <div v-if="showCategories" ref="categoryButtons">
         <button v-for="category in filteredCategories" :key="category" class="category-button" @click="fetchProducts(category); selectedCategory = category">
@@ -48,46 +48,13 @@
       </div>
     </div>
     <div class="modal" tabindex="-1" v-if="showAddProductModal" :class="{ 'show d-block': showAddProductModal }">
-    <div class="modal-dialog">
+      <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">Ajouter un produit</h5>
             <button type="button" class="btn-close" @click="showAddProductModal = false"></button>
           </div>
-          <div class="modal-body">
-            <div class="mb-3">
-              <label class="form-label">Nom du produit</label>
-              <input type="text" v-model="newProduct.name" class="form-control" placeholder="Entrez le nom du produit">
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Prix du produit</label>
-              <input type="number" v-model="newProduct.price" class="form-control" placeholder="Entrez le prix du produit">
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Lien de la photo du produit ou télécharger un fichier</label>
-              <div>
-                <input type="radio" id="link" value="link" v-model="imageOption">
-                <label for="link">Lien</label>
-                <input type="radio" id="file" value="file" v-model="imageOption">
-                <label for="file">Fichier</label>
-              </div>
-              <input v-if="imageOption === 'link'" type="text" v-model="newProduct.image" class="form-control" placeholder="Entrez le lien de l'image du produit">
-              <input v-else type="file" @change="handleFileUpload" class="form-control">
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Catégorie du produit</label>
-              <select v-model="newProduct.category" class="form-control">
-                <option v-for="category in categories" :key="category" :value="category">{{ category }}</option>
-                <option value="new">Ajouter une nouvelle catégorie</option>
-              </select>
-              <br/>
-              <input v-if="newProduct.category === 'new'" type="text" v-model="newCategory" class="form-control" placeholder="Entrez le nom de la nouvelle catégorie">
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="showAddProductModal = false">Fermer</button>
-            <button type="button" class="btn btn-primary" @click="addProduct">Ajouter le produit</button>
-          </div>
+
         </div>
       </div>
     </div>
@@ -100,11 +67,15 @@ import { ref,nextTick, watch, computed } from 'vue';
 import { useStore } from 'vuex';
 import { getDatabase, ref as dbRef, set, onValue, remove } from "firebase/database";
 import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { useRouter } from 'vue-router';
 
 export default {
   data() {
     return {
+      barMinValue: 0,
+      barMaxValue: 20,
       currentCollection: 'siteCollection', // Ajoutez cette ligne
+      selectedBodyPart: null,
       newCategory: '',
       userId: null,
       imageOption: 'link',
@@ -113,7 +84,7 @@ export default {
         name: '',
         price: '',
         image: '',
-        category: ''
+        category: '',
       },
       uploadedFile: null, // Ajoutez cette ligne
     };
@@ -127,7 +98,14 @@ export default {
     }
   },
   methods: {
-
+    UpdateValues(e) {
+      this.barMinValue = e.minValue;
+      this.barMaxValue = e.maxValue;
+    },
+    selectBodyPart(part) {
+      console.log(`Selected body part: ${part}`);
+      this.selectedBodyPart = part;
+    },
     fetchMyCollection: function() {
       return new Promise((resolve) => {
         const db = getDatabase();
@@ -210,12 +188,8 @@ export default {
       });
     },
     addProduct: async function() {
-      if (!this.newProduct.name || !this.newProduct.price || !this.newProduct.image || !this.newProduct.category) {
-        this.$store.dispatch('showNotification', { message: 'Veuillez remplir tous les champs.', type: 'error' });
-        return;
-      }
-      if (this.imageOption === 'file' && !(this.uploadedFile instanceof File)) {
-        console.error('uploadedFile is not a File object');
+      if (!this.newProduct.name || !this.newProduct.price || !this.newProduct.image || !this.newProduct.category || !this.selectedBodyPart) {
+        this.$store.dispatch('showNotification', { message: 'Veuillez remplir tous les champs, y compris la sélection d\'une partie du corps.', type: 'error' });
         return;
       }
 
@@ -230,18 +204,19 @@ export default {
       set(productRef, {
         name: this.newProduct.name,
         image: imageUrl,
-        price: this.newProduct.price
+        price: this.newProduct.price,
+        bodyPart: this.selectedBodyPart // Ajoutez cette ligne
       }).then(() => {
         this.newProduct.name = '';
         this.newProduct.price = '';
         this.newProduct.category = '';
         this.newProduct.image = '';
-        this.newCategory = ''; // Réinitialisez newCategory
+        this.newCategory = '';
         this.uploadedFile = null;
         this.showAddProductModal = false;
         this.$store.dispatch('showNotification', { message: 'Produit ajouté avec succès !', type: 'success' });
         if (this.newProduct.category === 'new') {
-          this.categories = [...this.categories, this.newCategory]; // Réaffectez le tableau entier
+          this.categories = [...this.categories, this.newCategory];
         }
       });
     },
@@ -272,6 +247,7 @@ export default {
 
   },
   setup() {
+    const router = useRouter();
     const name = ref('');
     const price = ref('');
     const category = ref('');
@@ -291,6 +267,10 @@ export default {
           categoryButtons.value.scrollIntoView({ behavior: 'smooth' });
         }
       });
+    };
+
+    const goToAddProductPage = () => {
+      router.push({ name: 'AddProduct' });
     };
 
     const fetchProducts = async (category) => {
@@ -331,7 +311,7 @@ export default {
       });
     };
 
-    return {fetchSiteCollection, isAdmin,name, price, category, categories, products, fetchProducts, scrollToProduct, message, filteredCategories, isLoggedIn, showCategories, showMyCollection, categoryButtons, scrollToCategories, selectedCategory};
+    return {goToAddProductPage,fetchSiteCollection, isAdmin,name, price, category, categories, products, fetchProducts, scrollToProduct, message, filteredCategories, isLoggedIn, showCategories, showMyCollection, categoryButtons, scrollToCategories, selectedCategory};
   },
 };
 </script>
@@ -374,47 +354,6 @@ export default {
   object-fit: cover;
 }
 
-.form-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.product-form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  padding: 20px;
-  border-radius: 5px;
-  background-color: #f8f9fa;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-.form-input {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ced4da;
-  border-radius: 5px;
-  font-size: 16px;
-}
-
-.form-button {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  background-color: #007bff;
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.form-button:hover {
-  background-color: #0056b3;
-}
 
 .products-container {
   display: flex;
@@ -442,29 +381,8 @@ export default {
   transition: opacity 1s ease-out;
 }
 
-.message[hidden] {
-  opacity: 0;
-}
-
-.add-to-collection-button {
-  justify-content: center;
-  padding: 10px 20px;
-  background-color: gray;
-  border: none;
-  border-radius: 5px;
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-  margin: 5px;
-  transition: background-color 0.3s ease;
-}
-
-.add-to-collection-button:hover {
-  background-color: darkgray;
-}
-
 .modal {
-  margin-top: 75px;
+  margin-top: 30px;
   tabindex: -1;
 }
 
@@ -568,6 +486,7 @@ export default {
   color: #333;
 }
 
+
 .login-message h2 {
   font-size: 2.5em;
   margin-bottom: 1em;
@@ -586,13 +505,59 @@ export default {
   text-decoration: none;
 }
 
-.login-message .btn-primary {
-  background-color: #007bff;
-  color: white;
+/* Ajoutez une bordure à droite de la première colonne */
+.col-md-6:first-child {
+  border-right: 1px solid #000; /* Changez la couleur et l'épaisseur de la bordure selon vos préférences */
+  padding-right: 15px; /* Ajoutez un peu d'espace entre la bordure et le contenu de la colonne */
 }
 
-.login-message .btn-secondary {
-  background-color: #6c757d;
-  color: white;
+/* Assurez-vous que le contenu de la modal ne déborde pas */
+.modal-content {
+  overflow: auto; /* Ajoutez un défilement si nécessaire */
+}
+
+/* Assurez-vous que l'image du corps ne dépasse pas de la modal */
+.form-label img {
+  max-width: 100%; /* Limitez la largeur de l'image à la largeur de la modal */
+  height: auto; /* Conservez les proportions de l'image */
+}
+
+.form-label {
+  font-weight: bold;
+}
+
+.modal-dialog {
+  display: inline;
+  z-index: auto;
+}
+
+.body-parts-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.selected-body-part {
+  margin-top: 20px;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.multi-range-slider .track {
+  background: #ddd;
+  height: 10px;
+  border-radius: 10px;
+}
+
+.multi-range-slider .thumb {
+  width: 20px;
+  height: 20px;
+  background: #007bff;
+  border-radius: 50%;
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.multi-range-slider .track .selected {
+  background: #007bff;
 }
 </style>

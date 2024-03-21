@@ -6,7 +6,8 @@ import NotFound from '../components/NotFound.vue';
 import AdminDashboard from '../components/AdminDashboard.vue';
 import store from '../store'; // Assurez-vous d'importer le store
 import UserManagement from '../components/UserManagement.vue'; // Importez le composant UserManagement
-import ProductManagement from '../components/ProductManagement.vue'; // Importez le composant ProductManagement
+import ProductManagement from '../components/ProductManagement.vue';
+import AddProductPage from "@/components/AddProductPage.vue"; // Importez le composant ProductManagement
 
 
 const routes = [
@@ -63,7 +64,12 @@ const routes = [
         path: '/:pathMatch(.*)*',
         name: 'NotFound',
         component: NotFound
-    }
+    },
+    {
+        path: '/add-product',
+        name: 'AddProduct',
+        component: AddProductPage
+    },
 ];
 
 const router = createRouter({

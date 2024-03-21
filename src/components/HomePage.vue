@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="overflow: hidden;">
     <template v-if="!isLoggedIn">
       <div class="login-message">
         <h2>Bienvenue sur Toobo !</h2>
@@ -46,10 +46,11 @@ export default {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  min-height: 100vh; /* Remplacez 'height' par 'min-height' */
   text-align: center;
   background-color: #f8f9fa;
   color: #333;
+  overflow: hidden;
 }
 
 .login-message h2 {
@@ -79,4 +80,6 @@ export default {
   background-color: #6c757d;
   color: white;
 }
+
+
 </style>
