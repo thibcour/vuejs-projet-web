@@ -13,6 +13,7 @@
     "@firebase/functions": "^0.11.2",
     "@fortawesome/fontawesome-free": "^6.5.1",
     "@mapbox/mapbox-gl-geocoder": "^5.0.2",
+    "@popperjs/core": "^2.11.8",
     "@samhess/vue-address-input": "^1.0.0",
     "@studiometa/vue-mapbox-gl": "^2.3.4",
     "@vue-leaflet/vue-leaflet": "^0.10.1",

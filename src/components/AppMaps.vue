@@ -1,38 +1,22 @@
 <template>
   <div class="map-container">
-    <div ref="geocoderContainer" class="geocoder-container flex-center"></div>
-    <div ref="map" class="map"></div>
-    <div ref="geolocateContainer" class="geolocate-container">
+    <div class="geocoder-container flex-center" ref="geocoderContainer"></div>
+    <div class="map" ref="map"></div>
+    <div class="geolocate-container" ref="geolocateContainer">
       <div class="geolocate-control custom-geolocate-button"></div>
     </div>
     <div v-if="loading">Loading...</div>
     <div v-else-if="weatherData">
-      <!-- <p>Température: {{ weatherData.current.temp }}°c</p>
-      <p>Humidité: {{ weatherData.current.humidity }}%</p>
-      <p>Wind speed: {{weatherData.current.wind_speed}}km/H</p>
-      <p>Weather: {{weatherData.current.weather.description}}</p>
-      Add more weather data fields here as needed -->
-      <!-- <article class="widget">
-        <div class="weatherIcon"><i class="wi wi-day-cloudy"></i></div>
-        <div class="weatherInfo">
-          <div class="temperature"><span>{{ Math.round(weatherData.current.temp) }}&deg;</span></div>
-          <div class="description">
-            <div class="weatherCondition">{{weatherData.current.weather[0].description }}</div>
-            <div class="place">{{searchText}}</div>
-          </div>
-        </div>
-        <div class="date">{{currentDate}}</div>
-      </article>-->
-
       <br>
       <div class="container">
         <div class="weather-side">
           <div class="weather-gradient"></div>
           <div class="date-container">
-            <h2 class="date-dayname">{{searchText}}</h2><span class="date-day">{{dayName.charAt(0).toUpperCase() + dayName.slice(1)}}</span><i class="location-icon" data-feather="map-pin"></i><span class="location">{{currentDate}}</span></div>
+            <h2 class="date-dayname">{{searchText}}</h2>
+            <span class="date-day">{{dayName.charAt(0).toUpperCase() + dayName.slice(1)}}</span><i class="location-icon" data-feather="map-pin"></i><span class="location">{{currentDate}}</span></div>
           <div class="weather-container"><i class="weather-icon" data-feather="sun"></i>
             <img style="width: 128px" :src="'https://openweathermap.org/img/wn/' + icon + '@2x.png'" alt="Icon">
-            <h1 class="weather-temp">{{ Math.round(weatherData.current.temp)}}°C</h1>
+            <h1 class="weather-temp" v-if="weatherData && weatherData.current && 'temp' in weatherData.current">{{ Math.round(weatherData.current.temp)}}°C</h1>
             <h3 class="weather-desc">{{weatherData.current.weather[0].description }}</h3>
           </div>
         </div>
@@ -52,20 +36,19 @@
           </div>
           <div class="week-container">
             <ul class="week-list">
-              <li class="active"><span class="day-name">{{ nextDays[0] }}</span><span class="day-temp">{{Math.round(weatherData.daily[1].temp.day)}}°C</span><img style="width: 64px" :src="'https://openweathermap.org/img/wn/' + icon2 + '@2x.png'" alt="Icon"><span class="day-temp">{{Math.round(weatherData.daily[1].temp.min)}} / {{Math.round(weatherData.daily[1].temp.max)}}°C</span></li>
-              <li><span class="day-name">{{ nextDays[1] }}</span><span class="day-temp">{{Math.round(weatherData.daily[2].temp.day)}}°C</span><img style="width: 64px" :src="'https://openweathermap.org/img/wn/' + icon3 + '@2x.png'" alt="Icon"><span class="day-temp">{{Math.round(weatherData.daily[2].temp.min)}} / {{Math.round(weatherData.daily[2].temp.max)}}°C</span></li>
-              <li><span class="day-name">{{ nextDays[2] }}</span><span class="day-temp">{{Math.round(weatherData.daily[3].temp.day)}}°C</span><img style="width: 64px" :src="'https://openweathermap.org/img/wn/' + icon4 + '@2x.png'" alt="Icon"><span class="day-temp">{{Math.round(weatherData.daily[3].temp.min)}} / {{Math.round(weatherData.daily[3].temp.max)}}°C</span></li>
-              <li><span class="day-name">{{ nextDays[3] }}</span><span class="day-temp">{{Math.round(weatherData.daily[4].temp.day)}}°C</span><img style="width: 64px" :src="'https://openweathermap.org/img/wn/' + icon5 + '@2x.png'" alt="Icon"><span class="day-temp">{{Math.round(weatherData.daily[4].temp.min)}} / {{Math.round(weatherData.daily[4].temp.max)}}°C</span></li>
-              <li><span class="day-name">{{ nextDays[4] }}</span><span class="day-temp">{{Math.round(weatherData.daily[5].temp.day)}}°C</span><img style="width: 64px" :src="'https://openweathermap.org/img/wn/' + icon6 + '@2x.png'" alt="Icon"><span class="day-temp">{{Math.round(weatherData.daily[5].temp.min)}} / {{Math.round(weatherData.daily[5].temp.max)}}°C</span></li>
-              <div class="clear"></div>
+              <li class="active"><span class="day-name">{{ nextDays[0] }}</span><span class="day-temp">{{Math.round(weatherData.daily[1].temp.day)}}°C</span><img style="width: 64px" :src="'https://openweathermap.org/img/wn/' + this.icon2 + '@2x.png'" alt="Icon"><span class="day-temp">{{Math.round(weatherData.daily[1].temp.min)}} / {{Math.round(weatherData.daily[1].temp.max)}}°C</span></li>
+              <li><span class="day-name">{{ nextDays[1] }}</span><span class="day-temp">{{Math.round(weatherData.daily[2].temp.day)}}°C</span><img style="width: 64px" :src="'https://openweathermap.org/img/wn/' + this.icon3 + '@2x.png'" alt="Icon"><span class="day-temp">{{Math.round(weatherData.daily[2].temp.min)}} / {{Math.round(weatherData.daily[2].temp.max)}}°C</span></li>
+              <li><span class="day-name">{{ nextDays[2] }}</span><span class="day-temp">{{Math.round(weatherData.daily[3].temp.day)}}°C</span><img style="width: 64px" :src="'https://openweathermap.org/img/wn/' + this.icon4 + '@2x.png'" alt="Icon"><span class="day-temp">{{Math.round(weatherData.daily[3].temp.min)}} / {{Math.round(weatherData.daily[3].temp.max)}}°C</span></li>
+              <li><span class="day-name">{{ nextDays[3] }}</span><span class="day-temp">{{Math.round(weatherData.daily[4].temp.day)}}°C</span><img style="width: 64px" :src="'https://openweathermap.org/img/wn/' + this.icon5 + '@2x.png'" alt="Icon"><span class="day-temp">{{Math.round(weatherData.daily[4].temp.min)}} / {{Math.round(weatherData.daily[4].temp.max)}}°C</span></li>
+              <li><span class="day-name">{{ nextDays[4] }}</span><span class="day-temp">{{Math.round(weatherData.daily[5].temp.day)}}°C</span><img style="width: 64px" :src="'https://openweathermap.org/img/wn/' + this.icon6 + '@2x.png'" alt="Icon"><span class="day-temp">{{Math.round(weatherData.daily[5].temp.min)}} / {{Math.round(weatherData.daily[5].temp.max)}}°C</span></li>
             </ul>
+            <div class="clear"></div>
           </div>
         </div>
       </div>
     </div>
   </div>
-
-  </template>
+</template>
 
 
 
@@ -76,78 +59,102 @@ import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
 import axios from 'axios';
 
+
+
 export default {
   data() {
     return {
+      daily: [],
+      icon4: '',
+      icon5: '',
+      icon6: '',
+      icon3: '',
+      icon2: '',
+      wind_speed: null,
+      wind: null,
+      humidity: null,
+      clouds: null,
+      weather: null,
+      temp: null,
+      map: null,
+      icon: '',
+      currentDate: '',
       loading: false,
-      weatherData: this.updateWeatherData(48.866667,2.333333),
+      weatherData: null,
       mapboxAccessToken: process.env.VUE_APP_MAPBOX_ACCESS_TOKEN,
       latitude: 0,
       longitude: 0,
-      nextDays: [] // Ajouter cette ligne pour déclarer la propriété nextDays
+      nextDays: [],
+      currentDateString: '', // Define currentDateString
+      dayName: '', // Define dayName
+      searchText: '', // Define searchText
     };
   },
   mounted() {
     mapboxgl.accessToken = this.mapboxAccessToken;
 
-    // Créer la carte
+    // Set default coordinates to Paris
+    const defaultLatitude = 48.8566;
+    const defaultLongitude = 2.3522;
+
+    // Create the map
     this.map = new mapboxgl.Map({
       container: this.$refs.map,
       style: 'mapbox://styles/mapbox/streets-v11',
-      center: [2.3522, 48.8566], // Paris par défaut
+      center: [defaultLongitude, defaultLatitude], // Set default center to Paris
       zoom: 11,
-      attributionControl: false // Supprimer l'attribution
+      attributionControl: false // Remove attribution
     });
 
-    // Ajouter le contrôle de géolocalisation
+    // Add geolocation control
     const geolocateControl = new mapboxgl.GeolocateControl({
       positionOptions: {
-        enableHighAccuracy: true // Activer la haute précision
+        enableHighAccuracy: true // Enable high accuracy
       },
-      trackUserLocation: true, // Centrer la carte sur l'emplacement de l'utilisateur
-      showUserLocation: true // Afficher l'emplacement de l'utilisateur
+      trackUserLocation: true, // Center map on user's location
+      showUserLocation: true // Show user's location
     });
 
-    // Écouter l'événement de géolocalisation
+    // Listen to geolocate event
     geolocateControl.on('geolocate', (position) => {
       const latitude = position.coords.latitude;
       const longitude = position.coords.longitude;
-      //this.searchText = ;
-      this.updateWeatherData(latitude, longitude); // Appeler la méthode pour mettre à jour les données météorologiques
+      this.updateWeatherData(latitude, longitude); // Call method to update weather data
     });
 
-    // Ajouter le contrôle à la carte
+    // Add control to the map
     this.map.addControl(geolocateControl);
 
-    // Ajouter le géocodeur
+    // Add geocoder
     const geocoder = new MapboxGeocoder({
       accessToken: mapboxgl.accessToken,
       mapboxgl: mapboxgl,
-      placeholder: 'Entrez une adresse', // Texte de préremplissage
+      placeholder: 'Enter an address', // Placeholder text
     });
 
-    // Ajouter le géocodeur à la carte
+    // Add geocoder to the map
     this.map.addControl(geocoder, 'top-left');
 
-    // Écouter l'événement de résultat de recherche du géocodeur
+    // Listen to geocoder search result event
     geocoder.on('result', (e) => {
       const coordinates = e.result.geometry.coordinates;
       const latitude = coordinates[1];
       const longitude = coordinates[0];
-      //this.searchText = e.result.text;
-      this.updateWeatherData(latitude, longitude); // Appeler la méthode pour mettre à jour les données météorologiques
+      this.updateWeatherData(latitude, longitude); // Call method to update weather data
     });
+
+    // Update weather data for default city
+    this.updateWeatherData(defaultLatitude, defaultLongitude);
   },
   methods: {
     getCityName(latitude, longitude) {
-      const apiKey = '740ecf1f34a8de40fb609316e481a77e'; // Remplacez YOUR_API_KEY par votre propre clé API de géocodage inverse
+      const apiKey = '740ecf1f34a8de40fb609316e481a77e';
       const url = `https://api.openweathermap.org/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&limit=1&lang=fr&appid=${apiKey}`;
 
-      axios.get(url)
+      return axios.get(url)
           .then(response => {
             if (response.data && response.data.length > 0) {
-              const cityName = response.data[0].name;
-              this.searchText = cityName; // Mettre à jour le texte de recherche avec le nom de la ville
+              this.searchText = response.data[0].name;
             }
           })
           .catch(error => {
@@ -155,11 +162,19 @@ export default {
           });
     },
 
+
     updateWeatherData(latitude, longitude) {
-      this.loading = true; // Afficher l'indicateur de chargement
-      this.getCityName(latitude, longitude); // Appeler la méthode pour récupérer le nom de la ville
-      this.getWeatherData(latitude, longitude); // Appeler la méthode pour obtenir les données météorologiques
+      this.loading = true;
+      this.getCityName(latitude, longitude)
+          .then(() => {
+            this.getWeatherData(latitude, longitude);
+          })
+          .catch(error => {
+            console.error('Error updating weather data:', error);
+            this.loading = false;
+          });
     },
+
     getNextFiveDays() {
       const options = { weekday: 'short' }; // Options pour obtenir les noms abrégés des jours
       const nextFiveDays = []; // Initialiser un tableau pour stocker les noms abrégés des jours suivants
@@ -177,50 +192,35 @@ export default {
     },
 
     getWeatherData(latitude, longitude) {
-      // Obtenir la date actuelle
-      const currentDate = new Date();
-      const dayOfMonth = currentDate.getDate(); // Obtenir le jour du mois
-      const monthIndex = currentDate.getMonth(); // Obtenir l'indice du mois (0-11)
-      const monthNames = [
-        'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-        'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
-      ];
-      const monthName = monthNames[monthIndex]; // Obtenir le nom du mois correspondant à l'indice
-      const currentDateString = `${dayOfMonth} ${monthName}`; // Concaténer le jour du mois et le nom du mois
-
-      const options = { weekday: 'long' };
-      const dayName = currentDate.toLocaleDateString('fr-FR', options); // 'fr-FR' pour obtenir le nom du jour en français, vous pouvez changer cela selon vos besoins de langue
-
-
-      this.loading = true;
       const apiKey = '740ecf1f34a8de40fb609316e481a77e';
       const url = `https://api.openweathermap.org/data/3.0/onecall?lat=${latitude}&lon=${longitude}&lang=fr&units=metric&exclude=minutely,hourly&appid=${apiKey}`;
-      axios.get(url)
+
+      return axios.get(url)
           .then(response => {
             this.loading = false;
             this.weatherData = response.data;
-            this.temperature = Math.round(this.weatherData.temp);
-            this.currentDate = currentDateString; // Stocker la date actuelle dans une propriété
-            this.dayName = dayName;
             this.icon = this.weatherData.current.weather[0].icon;
-            this.icon2 = this.weatherData.daily[1].weather[0].icon
-            this.icon3 = this.weatherData.daily[2].weather[0].icon
-            this.icon4 = this.weatherData.daily[3].weather[0].icon
-            this.icon5 = this.weatherData.daily[4].weather[0].icon
-            this.icon6 = this.weatherData.daily[5].weather[0].icon
+            this.icon2 = this.weatherData.daily[1].weather[0].icon;
+            this.icon3 = this.weatherData.daily[2].weather[0].icon;
+            this.icon4 = this.weatherData.daily[3].weather[0].icon;
+            this.icon5 = this.weatherData.daily[4].weather[0].icon;
+            this.icon6 = this.weatherData.daily[5].weather[0].icon;
             this.nextDays = this.getNextFiveDays();
           })
           .catch(error => {
             console.error('Error fetching weather data:', error);
             this.loading = false;
           });
-    }
+    },
   }
 
 };
 </script>
 
 <style scoped>
+@import url(https://fonts.googleapis.com/css?family=Poiret+One);
+@import url(https://cdnjs.cloudflare.com/ajax/libs/weather-icons/2.0.9/css/weather-icons.min.css);
+
 .map-container {
   width: 70%;
   margin: 40px auto;
@@ -238,100 +238,17 @@ export default {
   justify-content: center;
 }
 
-@import url(https://fonts.googleapis.com/css?family=Poiret+One);
-@import url(https://cdnjs.cloudflare.com/ajax/libs/weather-icons/2.0.9/css/weather-icons.min.css);
 
 $border-radius: 20px;
 
 body {
   background-color: #A64253;
-  font-family: Poiret One;
-}
-
-.widget {
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  display: flex;
-  height: 300px;
-  width: 600px;
-  transform: translate(-50%, -50%);
-  flex-wrap: wrap;
-  cursor: pointer;
-  border-radius: $border-radius;
-  box-shadow: 0 27px 55px 0 rgba(0, 0, 0, 0.3), 0 17px 17px 0 rgba(0, 0, 0, 0.15);
-
-  .weatherIcon{
-    flex: 1 100%;
-    height: 60%;
-    border-top-left-radius: $border-radius;
-    border-top-right-radius: $border-radius;
-    background: #FAFAFA;
-    font-family: weathericons;
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    font-size: 100px;
-
-    i{
-      padding-top: 30px;
-    }
-  }
-
-  .weatherInfo{
-    flex: 0 0 70%;
-    height: 40%;
-    background: #080705;
-    border-bottom-left-radius: $border-radius;
-    display: flex;
-    align-items: center;
-    color: white;
-
-    .temperature{
-      flex: 0 0 40%;
-      width: 100%;
-      font-size: 65px;
-      display: flex;
-      justify-content: space-around;
-    }
-
-    .description{
-      flex: 0 60%;
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      height: 100%;
-      justify-content: center;
-
-      .weatherCondition{
-        text-transform: uppercase;
-        font-size: 35px;
-        font-weight: 100;
-      }
-
-      .place{
-        font-size: 15px;
-      }
-    }
-  }
-
-  .date{
-    flex: 0 0 30%;
-    height: 40%;
-    background: #70C1B3;
-    border-bottom-right-radius: $border-radius;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    color: white;
-    font-size: 30px;
-    font-weight: 800;
-  }
+  font-family: Poiret One,serif;
 }
 
 p{
   position: fixed;
-  bottom: 0%;
+  bottom: 0;
   right: 2%;
   a{
     text-decoration: none;
@@ -339,28 +256,12 @@ p{
     font-size: 10px;
   }
 
-  .main {
-    margin-top: 50px;
-  }
-  .weather-panel {
-    color: #0a53be;
-    background-size: cover;
-    border-radius: 20px;
-    box-shadow: 25px 25px 40px 0px rgba(0,0,0,0.33);
-    position: relative;
-
-    small {
+  small {
       font-size: 50%;
     }
     ul.forecast > li {
       border-top: 1px solid #fff;
     }
-    .temperature {
-      & > span {
-        font-size: 2em;
-      }
-    }
-  }
 }
 
 @import url('https://fonts.googleapis.com/css?family=Montserrat:400,700,900&display=swap');
@@ -370,7 +271,6 @@ p{
 }
 
 * {
-  -webkit-box-sizing: border-box;
   box-sizing: border-box;
   line-height: 1.25em;
 }
@@ -410,22 +310,14 @@ body {
   height: 100%;
   border-radius: 25px;
   background-color: #0a53be;
-  //background-image: url("https://images.unsplash.com/photo-1559963110-71b394e7494d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=675&q=80");
   width: 300px;
-  -webkit-box-shadow: 0 0 20px -10px rgba(0, 0, 0, 0.2);
   box-shadow: 0 0 20px -10px rgba(0, 0, 0, 0.2);
-  -webkit-transition: -webkit-transform 300ms ease;
-  transition: -webkit-transform 300ms ease;
-  -o-transition: transform 300ms ease;
   transition: transform 300ms ease;
-  transition: transform 300ms ease, -webkit-transform 300ms ease;
-  -webkit-transform: translateZ(0) scale(1.02) perspective(1000px);
   transform: translateZ(0) scale(1.02) perspective(1000px);
   float: left;
 }
 
 .weather-side:hover {
-  -webkit-transform: scale(1.1) perspective(1500px) rotateY(10deg);
   transform: scale(1.1) perspective(1500px) rotateY(10deg);
 }
 
@@ -472,10 +364,6 @@ body {
   left: 25px;
 }
 
-.weather-icon.feather {
-  height: 60px;
-  width: auto;
-}
 
 .weather-temp {
   margin: 0;
@@ -534,13 +422,10 @@ body {
 }
 
 .week-list>li:hover {
-  -webkit-transform: scale(1.1);
-  -ms-transform: scale(1.1);
   transform: scale(1.1);
   background: #fff;
   color: #222831;
-  -webkit-box-shadow: 0 0 40px -5px rgba(0, 0, 0, 0.2);
-  box-shadow: 0 0 40px -5px rgba(0, 0, 0, 0.2)
+  box-shadow: 0 0 40px -5px rgba(0, 0, 0, 0.2);
 }
 
 .week-list>li.active {
@@ -555,12 +440,7 @@ body {
   text-align: center;
 }
 
-.week-list>li .day-icon {
-  display: block;
-  height: 30px;
-  width: auto;
-  margin: 0 auto;
-}
+
 
 .week-list>li .day-temp {
   display: block;
@@ -569,41 +449,4 @@ body {
   font-weight: 700;
 }
 
-.location-container {
-  padding: 25px 35px;
-}
-
-.location-button {
-  outline: none;
-  width: 100%;
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
-  border: none;
-  border-radius: 25px;
-  padding: 10px;
-  font-family: 'Montserrat', sans-serif;
-  background-image: var(--gradient);
-  color: #ffffff;
-  font-weight: 700;
-  -webkit-box-shadow: 0 0 30px -5px rgba(0, 0, 0, 0.25);
-  box-shadow: 0 0 30px -5px rgba(0, 0, 0, 0.25);
-  cursor: pointer;
-  -webkit-transition: -webkit-transform 200ms ease;
-  transition: -webkit-transform 200ms ease;
-  -o-transition: transform 200ms ease;
-  transition: transform 200ms ease;
-  transition: transform 200ms ease, -webkit-transform 200ms ease;
-}
-
-.location-button:hover {
-  -webkit-transform: scale(0.95);
-  -ms-transform: scale(0.95);
-  transform: scale(0.95);
-}
-
-.location-button .feather {
-  height: 1em;
-  width: auto;
-  margin-right: 5px;
-}
 </style>

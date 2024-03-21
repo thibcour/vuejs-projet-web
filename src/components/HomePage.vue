@@ -1,6 +1,12 @@
 <template>
   <div style="overflow: hidden;">
-    <template v-if="!isLoggedIn">
+    <template v-if="isLoading">
+      <div class="login-message">
+        <h2>Chargement...</h2>
+        <b-spinner variant="primary" type="grow"></b-spinner>
+      </div>
+    </template>
+    <template v-else-if="!isLoggedIn && !isLoading">
       <div class="login-message">
         <h2>Bienvenue sur Toobo !</h2>
         <p>Pour accéder à la collection, veuillez vous connecter ou créer un compte.</p>
@@ -16,25 +22,34 @@
 </template>
 
 <script>
-import {computed} from 'vue';
+import {computed, ref, onMounted} from 'vue';
 import {useStore} from 'vuex';
 import AppMaps from './AppMaps.vue'
 import AppShop from "@/components/AppShop.vue";
-
+import { BSpinner } from 'bootstrap-vue-3';
 
 export default {
   name: 'HomePage',
   components: {
     AppMaps,
     AppShop,
+    BSpinner
   },
   setup() {
     const store = useStore();
     const isAdmin = computed(() => store.state.admin);
     const isLoggedIn = computed(() => store.state.isLoggedIn);
+    const isLoading = ref(true);
+
+    onMounted(async () => {
+      await store.dispatch('checkUserStatus');
+      isLoading.value = false;
+    });
+
+    console.log('HomePage setup called', { isLoggedIn: isLoggedIn.value, isLoading: isLoading.value });
 
     return {
-      isAdmin, isLoggedIn
+      isAdmin, isLoggedIn, isLoading
     };
   }
 };
@@ -80,6 +95,4 @@ export default {
   background-color: #6c757d;
   color: white;
 }
-
-
 </style>
