@@ -59,4 +59,8 @@ export default {
   height: 30px;
   margin-right: 10px;
 }
+
+.bg-dark {
+  background-color: #222831 !important;
+}
 </style>
