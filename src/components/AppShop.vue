@@ -1,5 +1,4 @@
 <template>
-  <br/>
   <div>
     <template v-if="currentCollection === 'myCollection'">
       <div ref="productsSection" class="products-container">
@@ -24,54 +23,45 @@
         </div>
       </div>
     </template>
-    <div class="button-container" >
-      <button class="category-button" @click="goToAddProductPage">
-        Ajouter un produit
-      </button>
+    <div v-if="personalizedStyle && personalizedStyle.length > 0" class="products-container">
+      <div v-for="product in personalizedStyle" :key="product && product.name" class="product-item card">
+        <img v-if="product" :src="product.image" :alt="product.name" class="product-image card-img-top">
+        <div class="card-body">
+          <h5 class="card-title">{{ product && product.name }}</h5>
+        </div>
+      </div>
     </div>
-
-
     <div class="button-container" v-if="isLoggedIn">
       <div class="category-buttons">
         <button class="category-button" @click="handleButtonClick">Ma Collection</button>
-        <button class="category-button" @click="handleSiteCollectionClick">
-          Collection du Site
-        </button>
-      </div>
-      <button v-if="showMyCollection" class="category-button" @click="showAddProductModal = true">
-        Ajouter un produit
-      </button>
-      <div v-if="showCategories" ref="categoryButtons">
-        <button v-for="category in filteredCategories" :key="category" class="category-button" @click="fetchProducts(category); selectedCategory = category">
-          {{ category }}
-        </button>
-      </div>
-    </div>
-    <div class="modal" tabindex="-1" v-if="showAddProductModal" :class="{ 'show d-block': showAddProductModal }">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Ajouter un produit</h5>
-            <button type="button" class="btn-close" @click="showAddProductModal = false"></button>
-          </div>
+        <button class="category-button" @click="handleSiteCollectionClick">Collection du Site</button>
+        <button class="category-button" @click="fetchPersonalizedStyle">Style Personaliser</button>
 
-        </div>
+      </div>
+      <div v-if="showCategories" ref="categoryButtons">
+        <button v-for="category in filteredCategories" :key="category" class="category-button" @click="fetchProducts(category); selectedCategory = category">{{ category }}</button>
+      </div>
+      <div class="button-container" v-if="currentCollection === 'myCollection'">
+        <button v-if="currentCollection === 'myCollection'" class="category-button" @click="goToAddProductPage">Ajouter un produit</button>
       </div>
     </div>
   </div>
 </template>
 
+
+
 <script>
 import { getAuth } from "firebase/auth";
-import { ref,nextTick, watch, computed } from 'vue';
+import { ref, nextTick, watch, computed } from 'vue';
 import { useStore } from 'vuex';
-import { getDatabase, ref as dbRef, set, onValue, remove } from "firebase/database";
-import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { useRouter } from 'vue-router';
+import { getDatabase, ref as dbRef, onValue, remove } from "firebase/database";
 
 export default {
   data() {
     return {
+      isButtonClicked: false,
+      personalizedStyle: [],
+      userProducts: [],
       barMinValue: 0,
       barMaxValue: 20,
       currentCollection: 'siteCollection', // Ajoutez cette ligne
@@ -97,14 +87,77 @@ export default {
       this.currentCollection = 'myCollection';
     }
   },
-  methods: {
-    UpdateValues(e) {
-      this.barMinValue = e.minValue;
-      this.barMaxValue = e.maxValue;
+  computed: {
+    weatherData() {
+      return this.$store.state.weatherData;
+
     },
-    selectBodyPart(part) {
-      console.log(`Selected body part: ${part}`);
-      this.selectedBodyPart = part;
+  },
+  methods: {
+    hidePreviousContent() {
+      this.userProducts = [];
+      this.personalizedStyle = [];
+      this.products = [];
+    },
+    fetchPersonalizedStyle() {
+      this.hidePreviousContent();
+      this.showCategories = false;
+      console.log('fetchPersonalizedStyle called');
+      if (this.weatherData && this.weatherData.current) {
+        const currentTemperature = this.weatherData.current.temp;
+        const db = getDatabase();
+        const productRef = dbRef(db, `users/${this.userId}/products`);
+        onValue(productRef, (snapshot) => {
+
+          const data = snapshot.val();
+          if (data) {
+            const allProducts = Object.keys(data).map(category => {
+              return Object.keys(data[category]).map(name => {
+                return {
+                  category: category,
+                  name: name,
+                  ...data[category][name]
+                };
+              });
+            }).flat();
+
+            const bodyParts = ['Tête', 'Haut', 'Bas', 'Chaussures'];
+            const personalizedStyle = bodyParts.map(bodyPart => {
+              const matchingProducts = allProducts.filter(product =>
+                  product.bodyPart === bodyPart &&
+                  product.minTemperature <= currentTemperature &&
+                  product.maxTemperature >= currentTemperature
+              );
+              if (matchingProducts.length > 0) {
+                const randomIndex = Math.floor(Math.random() * matchingProducts.length);
+                return matchingProducts[randomIndex];
+              }
+              return null;
+            });
+
+            this.personalizedStyle = personalizedStyle;
+
+            // Ajoutez cette vérification ici
+            if (document.readyState === 'complete') {
+              this.$nextTick(() => {
+                setTimeout(() => {
+                  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                }, 150); // Add a delay of 500ms
+              });
+            } else {
+              window.addEventListener('load', () => {
+                this.$nextTick(() => {
+                  setTimeout(() => {
+                    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                  }, 150); // Add a delay of 500ms
+                });
+              });
+            }
+          }
+        });
+      } else {
+        console.error('weatherData or weatherData.current is undefined');
+      }
     },
     fetchMyCollection: function() {
       return new Promise((resolve) => {
@@ -141,10 +194,12 @@ export default {
         }
       });
     },
-
     handleSiteCollectionClick() {
+      console.log('handleSiteCollectionClick called');
       this.currentCollection = 'siteCollection';
+      console.log('currentCollection:', this.currentCollection);
       this.resetView();
+      this.personalizedStyle = []; // Réinitialisez la collection personnalisée ici
     },
     resetView() {
       this.showCategories = !this.showCategories;
@@ -168,86 +223,40 @@ export default {
         this.fetchMyCollection();
       });
     },
-    addProductToMyCollection(product) {
-      const db = getDatabase();
-      const productRef = dbRef(db, `users/${this.userId}/myCollection/${product.category}/${product.name}`);
-      set(productRef, product);
-    },
-    handleFileUpload(event) {
-      const file = event.target.files[0];
-      this.uploadedFile = file; // Stockez le fichier téléchargé
-      this.newProduct.image = URL.createObjectURL(file);
-    },
     handleButtonClick() {
+      this.hidePreviousContent();
+      console.log('handleButtonClick called');
       this.currentCollection = 'myCollection';
+      console.log('currentCollection:', this.currentCollection);
       console.log('Fetching my collection...');
       this.fetchMyCollection().then(() => {
         this.showCategories = false;
         this.products = []; // Réinitialisez les produits ici
+        this.personalizedStyle = []; // Réinitialisez la collection personnalisée ici
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
       });
     },
-    addProduct: async function() {
-      if (!this.newProduct.name || !this.newProduct.price || !this.newProduct.image || !this.newProduct.category || !this.selectedBodyPart) {
-        this.$store.dispatch('showNotification', { message: 'Veuillez remplir tous les champs, y compris la sélection d\'une partie du corps.', type: 'error' });
-        return;
-      }
-
-      let imageUrl = this.newProduct.image;
-      if (this.imageOption === 'file') {
-        imageUrl = await this.uploadImage(this.uploadedFile, this.userId);
-      }
-
-      const db = getDatabase();
-      const category = this.newProduct.category === 'new' ? this.newCategory : this.newProduct.category;
-      const productRef = dbRef(db, `users/${this.userId}/products/${category}/${this.newProduct.name}`);
-      set(productRef, {
-        name: this.newProduct.name,
-        image: imageUrl,
-        price: this.newProduct.price,
-        bodyPart: this.selectedBodyPart // Ajoutez cette ligne
-      }).then(() => {
-        this.newProduct.name = '';
-        this.newProduct.price = '';
-        this.newProduct.category = '';
-        this.newProduct.image = '';
-        this.newCategory = '';
-        this.uploadedFile = null;
-        this.showAddProductModal = false;
-        this.$store.dispatch('showNotification', { message: 'Produit ajouté avec succès !', type: 'success' });
-        if (this.newProduct.category === 'new') {
-          this.categories = [...this.categories, this.newCategory];
-        }
-      });
-    },
-    uploadImage: async function(file, userId) {
-      const storage = getStorage();
-      const storageReference = storageRef(storage, `users/${userId}/products/${file.name}`);
-      const uploadTask = uploadBytesResumable(storageReference, file);
-
-      return new Promise((resolve, reject) => {
-        uploadTask.on('state_changed',
-            (snapshot) => {
-              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-              console.log('Upload is ' + progress + '% done');
-            },
-            (error) => {
-              reject(error);
-            },
-            () => {
-              getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                resolve(downloadURL);
-              });
-            }
-        );
-      });
+    goToAddProductPage() {
+      this.$router.push('/add-product');
     },
   },
-  mounted() {
-
+  watch: {
+    isButtonClicked: {
+      handler() {
+        this.fetchPersonalizedStyle();
+      },
+      immediate: true
+    },
+    weatherData: {
+      handler() {
+        if (this.isButtonClicked) {
+          this.fetchPersonalizedStyle();
+        }
+      },
+      deep: true
+    }
   },
   setup() {
-    const router = useRouter();
     const name = ref('');
     const price = ref('');
     const category = ref('');
@@ -267,10 +276,6 @@ export default {
           categoryButtons.value.scrollIntoView({ behavior: 'smooth' });
         }
       });
-    };
-
-    const goToAddProductPage = () => {
-      router.push({ name: 'AddProduct' });
     };
 
     const fetchProducts = async (category) => {
@@ -311,10 +316,29 @@ export default {
       });
     };
 
-    return {goToAddProductPage,fetchSiteCollection, isAdmin,name, price, category, categories, products, fetchProducts, scrollToProduct, message, filteredCategories, isLoggedIn, showCategories, showMyCollection, categoryButtons, scrollToCategories, selectedCategory};
+    return {
+      fetchSiteCollection,
+      isAdmin,
+      name,
+      price,
+      category,
+      categories,
+      products,
+      fetchProducts,
+      scrollToProduct,
+      message,
+      filteredCategories,
+      isLoggedIn,
+      showCategories,
+      showMyCollection,
+      categoryButtons,
+      scrollToCategories,
+      selectedCategory
+    };
   },
 };
 </script>
+
 
 <style scoped>
 .products-container {
@@ -559,5 +583,13 @@ export default {
 
 .multi-range-slider .track .selected {
   background: #007bff;
+}
+
+.personalized-style-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 20px;
+  background-color: #f8f9fa;
 }
 </style>

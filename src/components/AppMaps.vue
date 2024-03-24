@@ -147,6 +147,8 @@ export default {
     this.updateWeatherData(defaultLatitude, defaultLongitude);
   },
   methods: {
+
+
     getCityName(latitude, longitude) {
       const apiKey = '740ecf1f34a8de40fb609316e481a77e';
       const url = `https://api.openweathermap.org/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&limit=1&lang=fr&appid=${apiKey}`;
@@ -199,6 +201,7 @@ export default {
           .then(response => {
             this.loading = false;
             this.weatherData = response.data;
+            this.$store.commit('setWeatherData', this.weatherData);
             this.icon = this.weatherData.current.weather[0].icon;
             this.icon2 = this.weatherData.daily[1].weather[0].icon;
             this.icon3 = this.weatherData.daily[2].weather[0].icon;

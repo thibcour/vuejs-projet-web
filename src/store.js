@@ -17,6 +17,7 @@ async function checkIfUserIsAdmin(userId) {
 
 export default createStore({
     state: {
+        weatherData: null,
         isLoading: true,
         isLoggedIn: false,
         user: null,
@@ -28,6 +29,9 @@ export default createStore({
         }
     },
     mutations: {
+        setWeatherData(state, weatherData) {
+            state.weatherData = weatherData;
+        },
         setLoading(state, isLoading) {
             state.isLoading = isLoading;
         },
@@ -97,6 +101,25 @@ export default createStore({
                     commit('setUser', storedUser);
                 }
             }
+        },
+        async checkUserStatus({ commit }) {
+            const auth = getAuth();
+            const user = auth.currentUser;
+            if (user) {
+                const db = getDatabase();
+                const userRef = dbRef(db, `users/${user.uid}`);
+                const snapshot = await get(userRef);
+                if (snapshot.exists()) {
+                    user.username = snapshot.val().username;
+                }
+                commit('setUser', user);
+            } else {
+                const storedUser = JSON.parse(localStorage.getItem('user'));
+                if (storedUser) {
+                    commit('setUser', storedUser);
+                }
+            }
+
         }
     }
 });
