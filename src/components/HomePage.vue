@@ -1,4 +1,5 @@
 <template>
+  <br/>
   <div style="overflow: hidden;">
     <template v-if="isLoading">
       <div class="login-message">
@@ -8,6 +9,8 @@
     </template>
     <template v-else-if="!isLoggedIn && !isLoading">
       <div class="login-message">
+        <br/>
+        <img src="@/assets/LogoToboo.png" alt="Logo" class="rotating-logo">
         <h2>Bienvenue sur Toobo !</h2>
         <p>Pour accéder à la collection, veuillez vous connecter ou créer un compte.</p>
         <router-link to="/login" class="btn btn-primary">Se connecter</router-link>
@@ -61,11 +64,11 @@ export default {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  min-height: 100vh; /* Remplacez 'height' par 'min-height' */
+  min-height: auto;
   text-align: center;
   background-color: #f8f9fa;
   color: #333;
-  overflow: hidden;
+
 }
 
 .login-message h2 {
@@ -94,5 +97,20 @@ export default {
 .login-message .btn-secondary {
   background-color: #6c757d;
   color: white;
+}
+
+@keyframes rotation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.rotating-logo {
+  animation: rotation 2s infinite linear;
+  width: 10%; /* Réduisez la largeur à 50% */
+  height: auto; /* Conservez les proportions de l'image */
 }
 </style>
