@@ -10,7 +10,7 @@
         </div>
       </div>
       <div class="mb-3">
-        <button class="btn btn-primary me-2" @click="openAddProductModal">Ajouter un produit</button>
+        <button class="btn btn-primary me-2" @click="goToAddProductPage">Ajouter un produit</button>
         <button class="btn btn-danger me-2" @click="openDeleteCategoryModal">Supprimer une catégorie</button>
       </div>
     </div>
@@ -59,6 +59,23 @@
               <label class="form-label">Lien de la photo du produit</label>
               <input type="text" v-model="editedProduct.image" class="form-control">
             </div>
+            <div class="mb-3">
+              <label class="form-label">Température Minimale</label>
+              <input type="number" v-model="editedProduct.minTemperature" class="form-control">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Température Maximale</label>
+              <input type="number" v-model="editedProduct.maxTemperature" class="form-control">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Partie du corps</label>
+              <select v-model="editedProduct.bodyPart" class="form-control">
+                <option value="Tête">Tête</option>
+                <option value="Haut">Haut</option>
+                <option value="Bas">Bas</option>
+                <option value="Chaussures">Chaussures</option>
+              </select>
+            </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" @click="closeEditModal">Fermer</button>
@@ -67,6 +84,7 @@
         </div>
       </div>
     </div>
+
 
     <!-- Ajoutez ce modal pour l'ajout de produit -->
     <div class="modal" tabindex="-1" v-if="isAddProductModalOpen" :class="{ 'show d-block': isAddProductModalOpen }">
@@ -100,10 +118,6 @@
               <label class="form-label">Nom de la nouvelle catégorie</label>
               <input type="text" v-model="newCategory" class="form-control">
             </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="closeAddProductModal">Fermer</button>
-            <button type="button" class="btn btn-primary" @click="addProduct">Ajouter le produit</button>
           </div>
         </div>
       </div>
@@ -142,6 +156,9 @@ import {getDatabase, ref as dbRef, onValue, update, get, remove, set} from "fire
 
 export default {
   methods: {
+    goToAddProductPage() {
+      this.$router.push('/add-product-admin');
+    },
     goBack() {
       this.$router.push('/admin-dashboard');
     },
@@ -261,10 +278,14 @@ export default {
     });
 
     const openEditModal = (product) => {
-      editedProduct.value = {...product};
+      editedProduct.value = {
+        ...product,
+        maxTemperature: product.maxTemperature,
+        minTemperature: product.minTemperature,
+        bodyPart: product.bodyPart,
+      };
       isEditModalOpen.value = true;
     };
-
     const closeEditModal = () => {
       isEditModalOpen.value = false;
     };
@@ -274,7 +295,10 @@ export default {
       await update(productRef, {
         name: editedProduct.value.name,
         price: editedProduct.value.price,
-        image: editedProduct.value.image // Ajoutez cette ligne
+        image: editedProduct.value.image,
+        maxTemperature: editedProduct.value.maxTemperature,
+        minTemperature: editedProduct.value.minTemperature,
+        bodyPart: editedProduct.value.bodyPart,
       }).catch((error) => {
         console.error(`Échec de la modification du produit : ${editedProduct.value.name} dans la catégorie : ${editedProduct.value.category}`, error);
       });
@@ -364,6 +388,14 @@ export default {
 </script>
 
 <style scoped>
+
+.modal-dialog {
+  max-width: 400px; /* Ajustez cette valeur en fonction de vos besoins */
+}
+.modal-content {
+  max-height: 800px; /* Ajustez cette valeur en fonction de vos besoins */
+  overflow: auto; /* Ajoutez un défilement si le contenu dépasse la hauteur maximale */
+}
 .product-image {
   width: 100px;
   height: 100px;

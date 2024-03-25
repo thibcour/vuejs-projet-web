@@ -5,9 +5,10 @@ import UserRegister from '../components/UserRegister.vue';
 import NotFound from '../components/NotFound.vue';
 import AdminDashboard from '../components/AdminDashboard.vue';
 import store from '../store'; // Assurez-vous d'importer le store
-import UserManagement from '../components/UserManagement.vue'; // Importez le composant UserManagement
+import UserManagement from '../components/UserManagement.vue';
 import ProductManagement from '../components/ProductManagement.vue';
-import AddProductPage from "@/components/AddProductPage.vue"; // Importez le composant ProductManagement
+import AddProductPage from "@/components/AddProductPage.vue";
+import AddProductPageAdmin from "@/components/AddProductPageAdmin.vue";
 
 
 const routes = [
@@ -15,7 +16,7 @@ const routes = [
         path: '/admin-dashboard',
         name: 'AdminDashboard',
         component: AdminDashboard,
-        meta: { requiresAdmin: true } // Ajoutez cette ligne
+        meta: { requiresAdmin: true }
     },
     {
         path: '/',
@@ -33,9 +34,10 @@ const routes = [
         component: UserRegister
     },
     {
-        path: '/admin-dashboard', // Ajoutez cette route
+        path: '/admin-dashboard',
         name: 'AdminDashboard',
-        component: AdminDashboard
+        component: AdminDashboard,
+        meta: { requiresAdmin: true }
     },
     {
         path: '/:pathMatch(.*)*',
@@ -70,6 +72,12 @@ const routes = [
         name: 'AddProduct',
         component: AddProductPage
     },
+    {
+        path: '/add-product-admin',
+        name: 'AddProductAdmin',
+        component: AddProductPageAdmin,
+        meta: { requiresAdmin: true }
+    }
 ];
 
 const router = createRouter({

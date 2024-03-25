@@ -129,7 +129,7 @@ export default {
     const geocoder = new MapboxGeocoder({
       accessToken: mapboxgl.accessToken,
       mapboxgl: mapboxgl,
-      placeholder: 'Enter an address', // Placeholder text
+      placeholder: 'Rechercher', // Placeholder text
     });
 
     // Add geocoder to the map

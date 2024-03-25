@@ -1,5 +1,6 @@
 <template>
   <div>
+    <h2 class="text-center mt-4 mb-4 bg-primary text-white p-3 rounded">{{ currentTitle }}</h2>
     <template v-if="currentCollection === 'myCollection'">
       <div ref="productsSection" class="products-container">
         <div v-for="product in userProducts" :key="product.name" class="product-item card">
@@ -19,6 +20,7 @@
           <div class="card-body">
             <h5 class="card-title">{{ product.name }}</h5>
             <p class="card-text">{{ product.price }}€</p>
+            <button v-if="isLoggedIn" class="add-to-collection-button btn btn-primary" @click="addProductToMyCollection(product)">Ajouter à ma collection</button>
           </div>
         </div>
       </div>
@@ -35,8 +37,8 @@
       <div class="category-buttons">
         <button class="category-button" @click="handleButtonClick">Ma Collection</button>
         <button class="category-button" @click="handleSiteCollectionClick">Collection du Site</button>
-        <button class="category-button" @click="fetchPersonalizedStyle">Style Personaliser</button>
-
+        <button class="category-button" @click="fetchPersonalizedStyle">Votre Style Perso</button>
+        <button class="category-button" @click="fetchPersonalizedBangerStyle">The Banger Style </button>
       </div>
       <div v-if="showCategories" ref="categoryButtons">
         <button v-for="category in filteredCategories" :key="category" class="category-button" @click="fetchProducts(category); selectedCategory = category">{{ category }}</button>
@@ -54,11 +56,12 @@
 import { getAuth } from "firebase/auth";
 import { ref, nextTick, watch, computed } from 'vue';
 import { useStore } from 'vuex';
-import { getDatabase, ref as dbRef, onValue, remove } from "firebase/database";
+import { getDatabase, ref as dbRef, onValue, remove,set} from "firebase/database";
 
 export default {
   data() {
     return {
+      currentTitle: 'Faites votre choix',
       isButtonClicked: false,
       personalizedStyle: [],
       userProducts: [],
@@ -94,12 +97,28 @@ export default {
     },
   },
   methods: {
+    addProductToMyCollection(product) {
+      const db = getDatabase();
+      const productRef = dbRef(db, `users/${this.userId}/products/${product.category}/${product.name}`);
+      set(productRef, product).then(() => {
+        this.$store.dispatch('showNotification', { message: 'Produit ajouté à votre collection avec succès !', type: 'success' });
+        this.userProducts.push(product);
+        this.userProducts = [...this.userProducts];
+        this.handleButtonClick(); // Simuler le clic sur le bouton
+      }).catch(error => {
+        console.error('Error adding product:', error);
+      });
+    },
     hidePreviousContent() {
       this.userProducts = [];
       this.personalizedStyle = [];
       this.products = [];
     },
     fetchPersonalizedStyle() {
+      this.currentTitle = 'Votre Style Perso';
+      // Clear the userProducts array
+      this.userProducts = [];
+
       this.hidePreviousContent();
       this.showCategories = false;
       console.log('fetchPersonalizedStyle called');
@@ -107,19 +126,98 @@ export default {
         const currentTemperature = this.weatherData.current.temp;
         const db = getDatabase();
         const productRef = dbRef(db, `users/${this.userId}/products`);
-        onValue(productRef, (snapshot) => {
+        const siteProductRef = dbRef(db, 'siteCollection'); // Reference to site products
+        const siteProducts = [];
 
+        // Fetch site products
+        onValue(siteProductRef, (snapshot) => {
           const data = snapshot.val();
           if (data) {
-            const allProducts = Object.keys(data).map(category => {
-              return Object.keys(data[category]).map(name => {
-                return {
-                  category: category,
-                  name: name,
-                  ...data[category][name]
-                };
+            Object.keys(data).forEach(category => {
+              siteProducts.push(...Object.values(data[category]));
+            });
+          }
+        });
+
+        // Fetch user products
+        onValue(productRef, (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            const userProducts = Object.keys(data).flatMap(category => {
+              return Object.values(data[category]);
+            });
+
+            const allProducts = [...siteProducts, ...userProducts]; // Merge products
+
+            const bodyParts = ['Tête', 'Haut', 'Bas', 'Chaussures'];
+            const personalizedStyle = bodyParts.map(bodyPart => {
+              const matchingProducts = allProducts.filter(product =>
+                  product.bodyPart === bodyPart &&
+                  product.minTemperature <= currentTemperature &&
+                  product.maxTemperature >= currentTemperature
+              );
+              if (matchingProducts.length > 0) {
+                const randomIndex = Math.floor(Math.random() * matchingProducts.length);
+                return matchingProducts[randomIndex];
+              }
+              return null;
+            });
+
+            this.personalizedStyle = personalizedStyle;
+
+            // Add this check here
+            if (document.readyState === 'complete') {
+              this.$nextTick(() => {
+                setTimeout(() => {
+                  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                }, 150); // Add a delay of 500ms
               });
-            }).flat();
+            } else {
+              window.addEventListener('load', () => {
+                this.$nextTick(() => {
+                  setTimeout(() => {
+                    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                  }, 150); // Add a delay of 500ms
+                });
+              });
+            }
+          }
+        });
+      } else {
+        console.error('weatherData or weatherData.current is undefined');
+      }
+    },
+    fetchPersonalizedBangerStyle() {
+      this.currentTitle = 'The Banger Style';
+      this.hidePreviousContent();
+      this.showCategories = false;
+      console.log('fetchPersonalizedBangerStyle called');
+      if (this.weatherData && this.weatherData.current) {
+        const currentTemperature = this.weatherData.current.temp;
+        const db = getDatabase();
+        const productRef = dbRef(db, `products`);
+        const siteProductRef = dbRef(db, 'siteCollection'); // Référence aux produits du site
+        const siteProducts = [];
+
+        // Récupération des produits du site
+        onValue(siteProductRef, (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            Object.keys(data).forEach(category => {
+              siteProducts.push(...Object.values(data[category]));
+            });
+          }
+        });
+
+        // Récupération des produits de l'utilisateur
+        onValue(productRef, (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            const userProducts = Object.keys(data).flatMap(category => {
+              return Object.values(data[category]);
+            });
+
+            const allProducts = [...siteProducts, ...userProducts]; // Fusion des produits
 
             const bodyParts = ['Tête', 'Haut', 'Bas', 'Chaussures'];
             const personalizedStyle = bodyParts.map(bodyPart => {
@@ -195,11 +293,12 @@ export default {
       });
     },
     handleSiteCollectionClick() {
+      this.currentTitle = 'Collection du Site';
       console.log('handleSiteCollectionClick called');
       this.currentCollection = 'siteCollection';
       console.log('currentCollection:', this.currentCollection);
       this.resetView();
-      this.personalizedStyle = []; // Réinitialisez la collection personnalisée ici
+      this.personalizedStyle = []; // Reset the personalized collection here
     },
     resetView() {
       this.showCategories = !this.showCategories;
@@ -212,18 +311,21 @@ export default {
       const db = getDatabase();
       const productRef = dbRef(db, `users/${this.userId}/products/${product.category}/${product.name}`);
       remove(productRef).then(() => {
-        this.$store.dispatch('showNotification', { message: 'Produit supprimé de votre collection avec succès !', type: 'success' }); // Affichez la notification
-        // Mettez à jour la liste des produits
+        this.$store.dispatch('showNotification', { message: 'Produit supprimé de votre collection avec succès !', type: 'success' });
         const index = this.userProducts.findIndex(p => p.name === product.name && p.category === product.category);
         if (index !== -1) {
           this.userProducts.splice(index, 1);
-          this.userProducts = [...this.userProducts]; // Créez une nouvelle instance du tableau
+          this.userProducts = [...this.userProducts];
+        } else {
+          console.error('Product not found in userProducts array');
         }
-        // Rafraîchir la collection après la suppression
-        this.fetchMyCollection();
+        this.handleButtonClick(); // Simuler le clic sur le bouton
+      }).catch(error => {
+        console.error('Error removing product:', error);
       });
     },
     handleButtonClick() {
+      this.currentTitle = 'Ma Collection';
       this.hidePreviousContent();
       console.log('handleButtonClick called');
       this.currentCollection = 'myCollection';
@@ -231,8 +333,8 @@ export default {
       console.log('Fetching my collection...');
       this.fetchMyCollection().then(() => {
         this.showCategories = false;
-        this.products = []; // Réinitialisez les produits ici
-        this.personalizedStyle = []; // Réinitialisez la collection personnalisée ici
+        this.products = []; // Reset the products here
+        this.personalizedStyle = []; // Reset the personalized collection here
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
       });
     },
@@ -245,7 +347,7 @@ export default {
       handler() {
         this.fetchPersonalizedStyle();
       },
-      immediate: true
+      immediate: false // Change this to false
     },
     weatherData: {
       handler() {
@@ -592,4 +694,6 @@ export default {
   padding: 20px;
   background-color: #f8f9fa;
 }
+
+
 </style>

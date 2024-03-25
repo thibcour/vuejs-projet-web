@@ -57,26 +57,29 @@ export default createStore({
                 }, reject);
             });
         },
-        async login({ commit }, user) {
+        async login({ commit, dispatch }, user) {
             const isAdmin = await checkIfUserIsAdmin(user.uid);
             commit('setUser', { ...user, admin: isAdmin });
+            dispatch('checkAdminStatus');
             return isAdmin; // return isAdmin from the action
         },
-        logout({ commit }) {
+        logout({ commit, dispatch }) {
             const auth = getAuth();
             signOut(auth).then(() => {
                 commit('setUser', null);
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('user');
+                dispatch('checkAdminStatus');
             }).catch((error) => {
                 console.error(error);
             });
         },
-        showNotification({ commit }, notification) {
+        showNotification({ commit, dispatch }, notification) {
             commit('setNotification', notification);
             setTimeout(() => {
                 commit('setNotification', { message: '', type: 'info' });
             }, 3000);
+            dispatch('checkAdminStatus');
         },
         async checkAdminStatus({ commit }) {
             const auth = getAuth();
@@ -102,7 +105,7 @@ export default createStore({
                 }
             }
         },
-        async checkUserStatus({ commit }) {
+        async checkUserStatus({ commit, dispatch }) {
             const auth = getAuth();
             const user = auth.currentUser;
             if (user) {
@@ -113,10 +116,12 @@ export default createStore({
                     user.username = snapshot.val().username;
                 }
                 commit('setUser', user);
+                dispatch('checkAdminStatus');
             } else {
                 const storedUser = JSON.parse(localStorage.getItem('user'));
                 if (storedUser) {
                     commit('setUser', storedUser);
+                    dispatch('checkAdminStatus');
                 }
             }
 

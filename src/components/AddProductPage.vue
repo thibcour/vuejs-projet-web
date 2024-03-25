@@ -106,6 +106,12 @@ export default {
   components: {
     MultiRangeSlider,
   },
+  props: {
+    redirectPage: {
+      type: String,
+      default: 'Home'
+    },
+  },
   data() {
     return {
       categories: [],
@@ -134,7 +140,7 @@ export default {
   methods: {
     closeAndRedirect() {
       this.showAddProductModal = false;
-      this.router.push({ name: 'Home' });
+      this.router.push({ name: this.redirectPage || 'Home' });
     },
     UpdateValues(e) {
       this.barMinValue = e.minValue;
