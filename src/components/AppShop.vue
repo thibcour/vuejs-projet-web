@@ -695,5 +695,19 @@ export default {
   background-color: #f8f9fa;
 }
 
+.add-to-collection-button {
+  background-color: grey; /* Changez la couleur de fond en gris */
+}
 
+.add-to-collection-button:hover {
+  background-color: darkgrey; /* gris foncé lors du survol  */
+}
+
+.remove-from-collection-button {
+  background-color: red; /* Changez la couleur de fond en rouge */
+}
+
+.remove-from-collection-button:hover {
+  background-color: darkred; /* rouge foncé lors du survol  */
+}
 </style>

@@ -11,14 +11,14 @@ import router from './router';
 
 // Votre configuration Firebase
 const firebaseConfig = {
-    apiKey: "AIzaSyAJRp8WxcFUDzBzsRnqG-TZTUQG3jWGjnQ",
-    authDomain: "vuejs-ae8a0.firebaseapp.com",
-    databaseURL: "https://vuejs-ae8a0-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "vuejs-ae8a0",
-    storageBucket: "vuejs-ae8a0.appspot.com",
-    messagingSenderId: "104652181195",
-    appId: "1:104652181195:web:9bba7498e6fb88baa7d54e",
-    measurementId: "G-2CJPHT3X6K"
+    apiKey: "",
+    authDomain: "",
+    databaseURL: "",
+    projectId: "",
+    storageBucket: "",
+    messagingSenderId: "",
+    appId: "",
+    measurementId: ""
 };
 
 // Initialisation de Firebase
@@ -33,3 +33,4 @@ store.dispatch('init').then(() => {
 }).catch(error => {
     console.error("Failed to init store: ", error);
 });
+

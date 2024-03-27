@@ -36,11 +36,17 @@
           </div>
           <div class="week-container">
             <ul class="week-list">
-              <li class="active"><span class="day-name">{{ nextDays[0] }}</span><span class="day-temp">{{Math.round(weatherData.daily[1].temp.day)}}°C</span><img style="width: 64px" :src="'https://openweathermap.org/img/wn/' + this.icon2 + '@2x.png'" alt="Icon"><span class="day-temp">{{Math.round(weatherData.daily[1].temp.min)}} / {{Math.round(weatherData.daily[1].temp.max)}}°C</span></li>
-              <li><span class="day-name">{{ nextDays[1] }}</span><span class="day-temp">{{Math.round(weatherData.daily[2].temp.day)}}°C</span><img style="width: 64px" :src="'https://openweathermap.org/img/wn/' + this.icon3 + '@2x.png'" alt="Icon"><span class="day-temp">{{Math.round(weatherData.daily[2].temp.min)}} / {{Math.round(weatherData.daily[2].temp.max)}}°C</span></li>
-              <li><span class="day-name">{{ nextDays[2] }}</span><span class="day-temp">{{Math.round(weatherData.daily[3].temp.day)}}°C</span><img style="width: 64px" :src="'https://openweathermap.org/img/wn/' + this.icon4 + '@2x.png'" alt="Icon"><span class="day-temp">{{Math.round(weatherData.daily[3].temp.min)}} / {{Math.round(weatherData.daily[3].temp.max)}}°C</span></li>
-              <li><span class="day-name">{{ nextDays[3] }}</span><span class="day-temp">{{Math.round(weatherData.daily[4].temp.day)}}°C</span><img style="width: 64px" :src="'https://openweathermap.org/img/wn/' + this.icon5 + '@2x.png'" alt="Icon"><span class="day-temp">{{Math.round(weatherData.daily[4].temp.min)}} / {{Math.round(weatherData.daily[4].temp.max)}}°C</span></li>
-              <li><span class="day-name">{{ nextDays[4] }}</span><span class="day-temp">{{Math.round(weatherData.daily[5].temp.day)}}°C</span><img style="width: 64px" :src="'https://openweathermap.org/img/wn/' + this.icon6 + '@2x.png'" alt="Icon"><span class="day-temp">{{Math.round(weatherData.daily[5].temp.min)}} / {{Math.round(weatherData.daily[5].temp.max)}}°C</span></li>
+              <li class="active">
+                <span class="day-name">{{ nextDays[0] }}</span><span class="day-temp">{{Math.round(weatherData.daily[1].temp.day)}}°C</span><img style="width: 64px" :src="'https://openweathermap.org/img/wn/' + this.icon2 + '@2x.png'" alt="Icon">
+                <span class="day-temp">{{Math.round(weatherData.daily[1].temp.min)}} / {{Math.round(weatherData.daily[1].temp.max)}}°C</span></li>
+              <li><span class="day-name">{{ nextDays[1] }}</span><span class="day-temp">{{Math.round(weatherData.daily[2].temp.day)}}°C</span><img style="width: 64px" :src="'https://openweathermap.org/img/wn/' + this.icon3 + '@2x.png'" alt="Icon">
+                <span class="day-temp">{{Math.round(weatherData.daily[2].temp.min)}} / {{Math.round(weatherData.daily[2].temp.max)}}°C</span></li>
+              <li><span class="day-name">{{ nextDays[2] }}</span><span class="day-temp">{{Math.round(weatherData.daily[3].temp.day)}}°C</span><img style="width: 64px" :src="'https://openweathermap.org/img/wn/' + this.icon4 + '@2x.png'" alt="Icon">
+                <span class="day-temp">{{Math.round(weatherData.daily[3].temp.min)}} / {{Math.round(weatherData.daily[3].temp.max)}}°C</span></li>
+              <li><span class="day-name">{{ nextDays[3] }}</span><span class="day-temp">{{Math.round(weatherData.daily[4].temp.day)}}°C</span><img style="width: 64px" :src="'https://openweathermap.org/img/wn/' + this.icon5 + '@2x.png'" alt="Icon">
+                <span class="day-temp">{{Math.round(weatherData.daily[4].temp.min)}} / {{Math.round(weatherData.daily[4].temp.max)}}°C</span></li>
+              <li><span class="day-name">{{ nextDays[4] }}</span><span class="day-temp">{{Math.round(weatherData.daily[5].temp.day)}}°C</span><img style="width: 64px" :src="'https://openweathermap.org/img/wn/' + this.icon6 + '@2x.png'" alt="Icon">
+                <span class="day-temp">{{Math.round(weatherData.daily[5].temp.min)}} / {{Math.round(weatherData.daily[5].temp.max)}}°C</span></li>
             </ul>
             <div class="clear"></div>
           </div>
@@ -150,7 +156,7 @@ export default {
 
 
     getCityName(latitude, longitude) {
-      const apiKey = '740ecf1f34a8de40fb609316e481a77e';
+      const apiKey = process.env.VUE_OPEN_WEATHER_MAP_ACCESS_TOKEN;
       const url = `https://api.openweathermap.org/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&limit=1&lang=fr&appid=${apiKey}`;
 
       return axios.get(url)
@@ -192,9 +198,8 @@ export default {
 
       return nextFiveDays; // Retourner les noms abrégés des cinq jours suivants
     },
-
     getWeatherData(latitude, longitude) {
-      const apiKey = '740ecf1f34a8de40fb609316e481a77e';
+      const apiKey = process.env.VUE_OPEN_WEATHER_MAP_ACCESS_TOKEN;
       const url = `https://api.openweathermap.org/data/3.0/onecall?lat=${latitude}&lon=${longitude}&lang=fr&units=metric&exclude=minutely,hourly&appid=${apiKey}`;
 
       return axios.get(url)
